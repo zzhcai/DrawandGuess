@@ -29,6 +29,42 @@ stateDiagram-v2
 	Showing --> [*]: quit
 ```
 
+```mermaid
+sequenceDiagram
+	participant player
+	participant server
+	participant prev_player
+	participant next_player
+	participant other_players
+	
+	player ->> server: Start game
+	server -->> player: prev and next player
+	server -->> player: 3 random words
+	player ->> player: choose one word
+	loop number of rounds
+	activate player
+		par
+		player ->> player: draw
+		and
+		player ->> other_players: multicast word
+		end
+		player ->> -next_player: send painting
+		prev_player ->> player: send painting
+		activate player
+		par
+		player ->> player: guess
+		and
+		player ->> other_players: multicast painting
+		end
+		player ->> -next_player: send word
+		prev_player ->> player: send word
+	end
+	player ->> player: show results
+	player ->> server: vote
+	server -->> player: voting result
+	
+```
+
 
 
 
