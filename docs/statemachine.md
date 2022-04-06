@@ -45,7 +45,7 @@ sequenceDiagram
     server/host -->> player: 3 random words
     player ->> player: choose one word
     player ->> other_players: multicast word
-    loop number of rounds
+    loop turns
       activate player
       player ->> player: draw
       player ->> -other_players: multicast painting
