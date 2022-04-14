@@ -196,3 +196,54 @@ sequenceDiagram
 
 
 
+
+
+
+
+```mermaid
+classDiagram
+DrawAndGuess ..> WhiteBoardGUI
+
+Room <..> Player
+Room : int id
+Room : InetAddress address
+DrawAndGuess ..> Player
+
+
+WhiteBoardGUI ..> WelcomePane
+WhiteBoardGUI ..> LoobyPane
+WhiteBoardGUI ..> WaitingRoomPane
+WhiteBoardGUI ..> GamePane
+
+Player ..> PlayerSocket
+
+
+PlayerSocket : String id
+
+Player : int id
+Player : String[] words
+Player : String[] guesses
+Player : Graphics[] drawings
+Player : joinRoom(InetAddress address)
+Player ..> WhiteBoardGUI
+
+GamePane : getGuess()
+GamePane : getDrawing()
+GamePane : showing(String[] words, String[] guesses, Graphics[] drawings)
+
+Host --|> Player
+
+Host : String[] dictionary
+Host : advertiseRoom()
+Host : createRoom()
+
+DrawAndGuess : InetAddress LOBBYADDRESS
+
+PlayerSocket ..> Message
+SessionMessage --|> Message
+RepairMessage --|> Message
+RequestMessage --|> Message
+DrawAndGuess ..> PlayerSocket
+
+```
+
