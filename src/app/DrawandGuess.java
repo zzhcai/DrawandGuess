@@ -10,7 +10,6 @@ public class DrawandGuess {
     }
 
     public static void main(String[] args) {
-
-
+        WhiteBoardGUI.setUp();
     }
 }
