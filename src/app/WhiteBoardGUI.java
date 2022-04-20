@@ -12,7 +12,8 @@ public class WhiteBoardGUI {
         frame.setSize(1200, 800);
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(lobbyScreen());
+//        frame.add(lobbyScreen());
+        frame.add(new GamePane());
         frame.setVisible(true);
     }
 
