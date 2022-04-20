@@ -1,6 +1,5 @@
 package srm;
 
-import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
@@ -24,7 +23,7 @@ public class Message
     /**
      * @param port the port number to which multicast socket is connected
      */
-    public Message(long seq, int port, Type type, DatagramPacket packet)
+    public Message(long seq, int port, Type type, byte[] payload)
     {
         this.seq = seq;
         String address = null;
@@ -37,7 +36,7 @@ public class Message
         }
         this.from = (address != null ? address+"@" : "") + port + "@" + ProcessHandle.current().pid();
         this.type = type;
-        this.payload = packet.getData();
+        this.payload = payload;
     }
 
     public long getSeq() {

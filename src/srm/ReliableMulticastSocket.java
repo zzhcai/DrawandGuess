@@ -1,17 +1,18 @@
 package srm;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
 import java.net.*;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.AbstractMap;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.*;
+import java.util.logging.Formatter;
+import java.util.stream.Collectors;
 
 /**
  * A reliable multicast socket class, made transparent,
@@ -23,29 +24,35 @@ public class ReliableMulticastSocket extends MulticastSocket
     protected static final Logger logger = Logger.getLogger(ReliableMulticastSocket.class.getName());
     protected static Gson gson = new GsonBuilder().serializeNulls().create();   // JSON converter
 
+    /** Group IP address */
+    private InetAddress group = null;
+
     /** DATA packet sequencer */
     private long sequencer = 0;
 
-    /** The highest sequence number and its arriving time, received from
-     *  each active source (including self) for the current-viewing page.
-     *  The page has a periodic removal of those deprecated states
+    /** The highest sequence number and its arriving time,
+     *  received from each active source (including self).
+     *  There is a periodic removal of those deprecated states
      *  whose sequence number hasn't changed for a while. */
     private final Map<String,
             AbstractMap.SimpleEntry<Long, LocalTime>> states =
             new ConcurrentHashMap<>();
-    /** How often to update page view in minutes */
-    protected static final int VIEW_TTL = 1;
+    /** How often to update states, in minutes */
+    protected static final long STATE_TTL = 5;
+    /** How recent the currently-viewing page filters states by, in minutes */
+    protected static final long VIEW_TTL = 1;
 
-    /** How often to send session message in minutes */
-    protected static double sessionRate = 0.5;
-    protected static final double sessionRateMax = 5;
-    protected static final double sessionRateMin = 0.1;
+    /** The aggregate bandwidth in bytes (regardless of headers' overhead),
+     *  since from the last session message. */
+    private final AtomicInteger aggregBW = new AtomicInteger(0);
+    /** The session bandwidth. */
+    private final AtomicInteger sessionBW = new AtomicInteger(0);
 
-    /** Record the number of messages over a period of time */
-    protected static int messageCount = 0;
-
-    /** Record the time the session message is sent */
-    protected static LocalTime sessionTime = null;
+    /** The dynamic rate of sending SESSION messages, in seconds, that
+     *  the bandwidth consumed is adaptive to 5% of the aggregate bandwidth. */
+    private long sessionRate = SESSION_RATE_MIN;
+    protected static final long SESSION_RATE_MAX = VIEW_TTL * 30;   // half
+    protected static final long SESSION_RATE_MIN = 10;
 
     /**
      * Constructs a multicast socket and
@@ -53,6 +60,15 @@ public class ReliableMulticastSocket extends MulticastSocket
      */
     public ReliableMulticastSocket(int port) throws IOException {
         super(port);
+        init();
+    }
+
+    /**
+     * Constructs a multicast socket and
+     * binds it to the specified local socket address.
+     */
+    public ReliableMulticastSocket(SocketAddress bindaddr) throws IOException {
+        super(bindaddr);
         init();
     }
 
@@ -66,28 +82,92 @@ public class ReliableMulticastSocket extends MulticastSocket
             simpleFormatter = new SimpleFormatter();
             handler.setFormatter(simpleFormatter);
             logger.addHandler(handler);
-            logger.info("Reliable multicast socket starting.");
         }
         catch (Exception e) {
             logger.log(Level.SEVERE, "Error occurs in logger.", e);
         }
 
-        // Update page view
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                states.forEach((k, v) -> {
-                    if (ChronoUnit.MINUTES.between(v.getValue(), LocalTime.now()) > VIEW_TTL) {
-                        states.remove(k, v);
-                    }
-                });
+        // Routines
+        new Timer().schedule(new StatesUpdatingTask(), STATE_TTL * 60000 * 2, STATE_TTL * 60000);
+        new Timer().schedule(new SessionSendingTask(this), sessionRate * 1000L);
+        logger.info("Reliable multicast socket starting.");
+    }
+
+    /**
+     * Task to remove deprecated states.
+     */
+    private class StatesUpdatingTask extends TimerTask {
+        @Override
+        public void run() {
+            logger.info("Ejecting states.");
+            states.forEach((k, v) -> {
+                if (ChronoUnit.MINUTES.between(v.getValue(), LocalTime.now()) > STATE_TTL) {
+                    states.remove(k, v);
+                }
+            });
+        }
+    }
+
+    /**
+     * Task to mutlicast SESSION messages
+     */
+    private class SessionSendingTask extends TimerTask
+    {
+        ReliableMulticastSocket socket;
+        /**
+         * @param socket the socket used for multicast
+         */
+        public SessionSendingTask(ReliableMulticastSocket socket) {
+            this.socket = socket;
+        }
+
+        @Override
+        public void run()
+        {
+            if (group != null) {
+                Message session = new Message(sequencer, getLocalPort(), Type.SESSION,
+                        gson.toJson(getViewingPage()).getBytes());
+                byte[] out = gson.toJson(session).getBytes();
+                DatagramPacket p = new DatagramPacket(out, out.length, group, getLocalPort());
+                try {
+                    logger.info("Multicasting SESSION.");
+                    _send(p);
+                    sessionBW.addAndGet(p.getLength());   // inc
+                }
+                catch (IOException e) {
+                    logger.log(Level.SEVERE, "Multicasting SESSION failed.", e);
+                }
+                updateSessionRate();
             }
-        }, VIEW_TTL * 120000, VIEW_TTL * 60000);
+            // Schedule next
+            new Timer().schedule(new SessionSendingTask(socket), sessionRate * 1000L);
+        }
+    }
+
+    /**
+     * Returns the currently-viewing page on states.
+     */
+    private Map<String, Long> getViewingPage() {
+        return states.entrySet().stream()
+                .filter(c -> ChronoUnit.MINUTES.between(c.getValue().getValue(),
+                        LocalTime.now()) <= VIEW_TTL)
+                .collect(Collectors.toMap(Map.Entry::getKey, c -> c.getValue().getKey()));
+    }
+
+    /**
+     * Reset bandwidth counters, then adjust the session rate.
+     */
+    public void updateSessionRate() {
+        double ratio = ((double) sessionBW.getAndSet(0)) / aggregBW.getAndSet(0);
+        long sessionRateTemp = (long) (20 * sessionRate / ratio);
+        sessionRate = Math.min(Math.max(sessionRateTemp, SESSION_RATE_MIN), SESSION_RATE_MAX);
+        logger.info("Session rate gets updated to per "+sessionRate+" seconds.");
     }
 
     @Override
-    public void joinGroup(SocketAddress mcastaddr, NetworkInterface netIf) throws IOException {
+    public synchronized void joinGroup(SocketAddress mcastaddr, NetworkInterface netIf) throws IOException {
         super.joinGroup(mcastaddr, netIf);
+        group = ((InetSocketAddress) mcastaddr).getAddress();
     }
 
     @Override
@@ -95,14 +175,24 @@ public class ReliableMulticastSocket extends MulticastSocket
         super.leaveGroup(mcastaddr, netIf);
     }
 
+    /**
+     * Multicast a datagram packet unreliably,
+     * and measures bandwidth cost at the same time.
+     */
+    private void _send(DatagramPacket p) throws IOException {
+        super.send(p);
+        aggregBW.addAndGet(p.getLength());
+    }
+
     @Override
     public synchronized void send(DatagramPacket p) throws IOException
     {
-        Message data = new Message(sequencer, getLocalPort(), Type.DATA, p);
+        Message data = new Message(sequencer, getLocalPort(), Type.DATA, p.getData());
         byte[] out = gson.toJson(data).getBytes();
         DatagramPacket _p = new DatagramPacket(out, out.length,
                 p.getAddress(), p.getPort());
-        super.send(_p);
+        logger.info("Multicasting DATA.");
+        _send(_p);
         if (!getOption(StandardSocketOptions.IP_MULTICAST_LOOP)) {
             states.put(data.getFrom(),
                     new AbstractMap.SimpleEntry<>(sequencer, LocalTime.now()));
@@ -114,17 +204,29 @@ public class ReliableMulticastSocket extends MulticastSocket
     public void receive(DatagramPacket p) throws IOException
     {
         int length = p.getLength();
-        while (true) {
+        while (true)
+        {
+            // Intercept packets
             DatagramPacket _p = new DatagramPacket(new byte[length], length);
             super.receive(_p);
             Message msg = gson.fromJson(
                     new String(_p.getData(), 0, _p.getLength()), Message.class);
-            // Block until receives DATA
-            if (msg.getType() == Type.DATA) {
+
+            if (msg == null ||
+                    msg.getFrom() == null || msg.getPayload() == null) {
+                continue;
+            }
+            switch (msg.getType()) {
+            case DATA -> {
+                logger.info("Received DATA.");
                 putIfGreater(msg.getFrom(),
                         new AbstractMap.SimpleEntry<>(msg.getSeq(), LocalTime.now()));
                 p.setData(msg.getPayload());
                 return;
+            }
+            case SESSION, REQUEST, REPAIR -> {
+                // TODO
+            }
             }
         }
     }
@@ -145,18 +247,5 @@ public class ReliableMulticastSocket extends MulticastSocket
             curr = states.get(k);
         }
     }
-
-    private synchronized void countMsg(LocalTime msgTime){
-        if (sessionTime == null) messageCount += 1;
-        else if (ChronoUnit.MINUTES.between(msgTime, sessionTime) < sessionRate) messageCount += 1;
-    }
-
-    private void updateSessionRate(){
-        double sessionRateTemp = sessionRate;
-        if (messageCount != 0) sessionRateTemp = 19 * sessionRate / messageCount;
-        if (sessionRateTemp > sessionRateMax || sessionRateTemp < sessionRateMin) sessionRateTemp = sessionRate;
-        sessionRate = sessionRateTemp;
-        messageCount = 0;
-        sessionTime = LocalTime.now();
-    }
+    
 }
