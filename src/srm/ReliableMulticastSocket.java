@@ -234,17 +234,16 @@ public class ReliableMulticastSocket extends MulticastSocket
     /**
      * Thread-safe,
      * put into states if the given sequence number is greater.
-     *
-     * @return true if the value is put
      */
-    private boolean putIfGreater(String k, AbstractMap.SimpleEntry<Long, LocalTime> v)
+    private void putIfGreater(String k, AbstractMap.SimpleEntry<Long, LocalTime> v)
     {
-        AbstractMap.SimpleEntry<Long, LocalTime> curr = states.putIfAbsent(k, v);
-        if (curr == null) return true;
+        AbstractMap.SimpleEntry<Long, LocalTime> curr;
         while (true) {
-            if (v.getKey() <= curr.getKey()) return false;
-            if (states.replace(k, curr, v))  return true;
             curr = states.get(k);
+            if (curr == null) {
+                if (states.putIfAbsent(k, v) == null) return;
+            }
+            else if (v.getKey() <= curr.getKey() || states.replace(k, curr, v)) return;
         }
     }
     
