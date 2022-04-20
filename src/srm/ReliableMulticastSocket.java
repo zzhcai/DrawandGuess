@@ -152,7 +152,8 @@ public class ReliableMulticastSocket extends MulticastSocket
     }
 
     private void updateSessionRate(){
-        double sessionRateTemp = 19 * sessionRate / messageCount;
+        double sessionRateTemp = sessionRate;
+        if (messageCount != 0) sessionRateTemp = 19 * sessionRate / messageCount;
         if (sessionRateTemp > sessionRateMax || sessionRateTemp < sessionRateMin) sessionRateTemp = sessionRate;
         sessionRate = sessionRateTemp;
         messageCount = 0;
