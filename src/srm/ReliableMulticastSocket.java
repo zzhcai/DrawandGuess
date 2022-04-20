@@ -36,6 +36,17 @@ public class ReliableMulticastSocket extends MulticastSocket
     /** How often to update page view in minutes */
     protected static final int VIEW_TTL = 1;
 
+    /** How often to send session message in minutes */
+    protected static double sessionRate = 0.5;
+    protected static final double sessionRateMax = 5;
+    protected static final double sessionRateMin = 0.1;
+
+    /** Record the number of messages over a period of time */
+    protected static int messageCount = 0;
+
+    /** Record the time the session message is sent */
+    protected static LocalTime sessionTime = null;
+
     /**
      * Constructs a multicast socket and
      * binds it to the specified port on the local host machine.
@@ -135,4 +146,16 @@ public class ReliableMulticastSocket extends MulticastSocket
         }
     }
 
+    private synchronized void countMsg(LocalTime msgTime){
+        if (sessionTime == null) messageCount += 1;
+        else if (ChronoUnit.MINUTES.between(msgTime, sessionTime) < sessionRate) messageCount += 1;
+    }
+
+    private void updateSessionRate(){
+        double sessionRateTemp = 19 * sessionRate / messageCount;
+        if (sessionRateTemp > sessionRateMax || sessionRateTemp < sessionRateMin) sessionRateTemp = sessionRate;
+        sessionRate = sessionRateTemp;
+        messageCount = 0;
+        sessionTime = LocalTime.now();
+    }
 }
