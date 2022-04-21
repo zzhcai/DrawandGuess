@@ -1,6 +1,5 @@
 package srm;
 
-import java.net.DatagramPacket;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -12,7 +11,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 /**
  * A cache of recent DATA/REPAIR messages, keeping arrival time,
  * with a periodic removal of those considered deprecated.
- * Also contains a queue of unconsumed datagram packets for
+ * Also contains a queue of unconsumed datagram payload for
  * the method ReliableMulticastSocket::receive to fetch from.
  */
 public class DataCache extends HashMap<Message, LocalTime>
@@ -22,7 +21,7 @@ public class DataCache extends HashMap<Message, LocalTime>
 	private final Timer updater = new Timer();
 
 	/** Queue to feed consumption */
-	private final BlockingQueue<DatagramPacket> unconsumed = new LinkedBlockingDeque<>();
+	private final BlockingQueue<byte[]> unconsumed = new LinkedBlockingDeque<>();
 
 	public DataCache(long ttl) {
 		this.ttl = ttl;
@@ -42,12 +41,12 @@ public class DataCache extends HashMap<Message, LocalTime>
 	/**
 	 * Cache a DATA/REPAIR message and queue its payload.
 	 */
-	public void put(Message msg)
+	protected void put(Message msg)
 	{
 		super.put(msg, LocalTime.now());
 		if (msg.getType() == Type.DATA || msg.getType() == Type.REPAIR) {
 			try {
-				unconsumed.put(new DatagramPacket(msg.getPayload(), msg.getPayload().length));
+				unconsumed.put(msg.getPayload());
 			}
 			catch (InterruptedException e) {
 				e.printStackTrace();
@@ -55,12 +54,12 @@ public class DataCache extends HashMap<Message, LocalTime>
 		}
 	}
 
-	/** Consume one queued datagram packets. */
-	protected DatagramPacket consume() throws InterruptedException {
+	/** Consume one queued datagram payload. */
+	protected byte[] consume() throws InterruptedException {
 		return unconsumed.take();
 	}
 
-	public Timer getUpdater() {
+	protected Timer getUpdater() {
 		return updater;
 	}
 

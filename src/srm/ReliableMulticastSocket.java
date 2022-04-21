@@ -20,7 +20,7 @@ import java.util.logging.*;
  * A reliable multicast framework for light-weight sessions and application level framing.
  * IEEE/ACM Transactions on Networking, 5(6), 784&ndash;803.
  *
- * @author Team Snorlax: 
+ * @author Team Snorlax:
  * Bingzhe Jin, Kaixun Yang, Shizhan Xu, Zhen Cai
  */
 public class ReliableMulticastSocket extends MulticastSocket
@@ -171,7 +171,7 @@ public class ReliableMulticastSocket extends MulticastSocket
 	@Override
 	public void receive(DatagramPacket p) {
 		try {
-			cache.consume();
+			p.setData(cache.consume());
 		}
 		catch (InterruptedException e) {
 			e.printStackTrace();

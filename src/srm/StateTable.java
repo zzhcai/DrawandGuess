@@ -65,7 +65,7 @@ public class StateTable extends ConcurrentHashMap<String,
 		}
 	}
 
-	public Timer getUpdater() {
+	protected Timer getUpdater() {
 		return updater;
 	}
 
