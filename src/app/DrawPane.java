@@ -6,13 +6,13 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 
-public class GamePane extends JPanel {
+public class DrawPane extends JPanel {
     private ArrayList<ColorPoint> points;
     private int size = 20;
     private Color color = Color.blue;
     private boolean rubber = false;
 
-    public GamePane() {
+    public DrawPane() {
         super();
         this.setLayout(null);
         points = new ArrayList<ColorPoint>();
@@ -30,12 +30,33 @@ public class GamePane extends JPanel {
         });
 
         JButton switchButton = new JButton("switch");
-        switchButton.setBounds(1000, 100, 100, 30);
+        switchButton.setBounds(1000, 10, 100, 30);
         switchButton.addActionListener(e -> {
             rubber = !rubber;
         });
 
+        JButton colorButton = new JButton("color");
+        colorButton.setBounds(900, 10, 100, 30);
+        colorButton.addActionListener(e -> {
+            color = JColorChooser.showDialog(null, "Choose pen color", color);
+        });
+
         this.add(switchButton);
+        this.add(colorButton);
+
+        JLabel sizeLabel = new JLabel(String.valueOf(size));
+        sizeLabel.setBounds(1010, 50, 100, 30);
+        this.add(sizeLabel);
+
+        Scrollbar sizeAdjust = new Scrollbar(Scrollbar.HORIZONTAL, 20, 0, 1, 60);
+        sizeAdjust.addAdjustmentListener(e -> {
+            size = e.getValue();
+            sizeLabel.setText(String.valueOf(size));
+        });
+        sizeAdjust.setBounds(900, 50, 100, 30);
+        this.add(sizeAdjust);
+
+
     }
 
     public void paint(Graphics g) {

@@ -13,7 +13,7 @@ public class WhiteBoardGUI {
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 //        frame.add(lobbyScreen());
-        frame.add(new GamePane());
+        frame.add(new DrawPane());
         frame.setVisible(true);
     }
 
