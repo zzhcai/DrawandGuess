@@ -5,5 +5,5 @@ package srm;
  */
 public enum Type
 {
-    SESSION, REQUEST, REPAIR, DATA
+	SESSION, REQUEST, REPAIR, DATA
 }

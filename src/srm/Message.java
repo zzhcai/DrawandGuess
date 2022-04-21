@@ -10,49 +10,49 @@ import java.util.logging.Level;
  */
 public class Message
 {
-    /** The sequence number of message */
-    private final long seq;
-    /** From which the datagram is being sent,
-     *  ${IpAddress}@${Port}@${Pid} */
-    private final String from;
-    /** Either one of those in enum class Type */
-    private final Type type;
-    /** The payload of the datagram packet */
-    private final byte[] payload;
+	/** The sequence number of message */
+	private final long seq;
+	/** From which the datagram is being sent,
+	 *  ${IpAddress}@${Port}@${Pid} */
+	private final String from;
+	/** Either one of those in enum class Type */
+	private final Type type;
+	/** The payload of the datagram packet */
+	private final byte[] payload;
 
-    /**
-     * @param port the port number to which multicast socket is connected
-     */
-    public Message(long seq, int port, Type type, byte[] payload)
-    {
-        this.seq = seq;
-        String address = null;
-        try {
-            address = InetAddress.getLocalHost().getHostAddress();
-        }
-        catch (UnknownHostException e) {
-            ReliableMulticastSocket.logger.log(Level.WARNING,
-                    "Cannot retrieve the address of the local host.", e);
-        }
-        this.from = (address != null ? address+"@" : "") + port + "@" + ProcessHandle.current().pid();
-        this.type = type;
-        this.payload = payload;
-    }
+	/**
+	 * @param port the port number to which multicast socket is connected
+	 */
+	public Message(long seq, int port, Type type, byte[] payload)
+	{
+		this.seq = seq;
+		String address = null;
+		try {
+			address = InetAddress.getLocalHost().getHostAddress();
+		}
+		catch (UnknownHostException e) {
+			ReliableMulticastSocket.logger.log(Level.WARNING,
+					"Cannot retrieve the address of the local host.", e);
+		}
+		this.from = (address != null ? address+"@" : "") + port + "@" + ProcessHandle.current().pid();
+		this.type = type;
+		this.payload = payload;
+	}
 
-    public long getSeq() {
-        return seq;
-    }
+	public long getSeq() {
+		return seq;
+	}
 
-    public String getFrom() {
-        return from;
-    }
+	public String getFrom() {
+		return from;
+	}
 
-    public Type getType() {
-        return type;
-    }
+	public Type getType() {
+		return type;
+	}
 
-    public byte[] getPayload() {
-        return payload;
-    }
+	public byte[] getPayload() {
+		return payload;
+	}
 
 }
