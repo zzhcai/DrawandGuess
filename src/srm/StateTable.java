@@ -2,7 +2,7 @@ package srm;
 
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -15,8 +15,7 @@ import java.util.stream.Collectors;
  * There is a periodic removal of those deprecated states
  * whose sequence number hasn't changed for a while.
  */
-public class StateTable extends ConcurrentHashMap<String,
-		AbstractMap.SimpleEntry<Long, LocalTime>>
+public class StateTable extends ConcurrentHashMap<String, SimpleEntry<Long, LocalTime>>
 {
 	/** How long a state is kept, in minutes */
 	private long ttl;
@@ -53,15 +52,18 @@ public class StateTable extends ConcurrentHashMap<String,
 
 	/**
 	 * Thread-safe, put if the given sequence number is greater.
+	 *
+	 * @return old v; null if absent or smaller
 	 */
-	protected void putIfGreater(String k, AbstractMap.SimpleEntry<Long, LocalTime> v) {
-		AbstractMap.SimpleEntry<Long, LocalTime> curr;
+	protected Long putIfAbsentOrGreater(String k, SimpleEntry<Long, LocalTime> v) {
+		SimpleEntry<Long, LocalTime> curr;
 		while (true) {
 			curr = get(k);
 			if (curr == null) {
-				if (putIfAbsent(k, v) == null) return;
+				if (putIfAbsent(k, v) == null) return null;
 			}
-			else if (v.getKey() <= curr.getKey() || replace(k, curr, v)) return;
+			else if (v.getKey() <= curr.getKey()) return null;
+			else if (replace(k, curr, v)) return curr.getKey();
 		}
 	}
 

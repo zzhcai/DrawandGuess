@@ -6,7 +6,7 @@ import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.net.*;
 import java.time.LocalTime;
-import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,13 +15,13 @@ import java.util.logging.*;
 /**
  * A reliable multicast socket class, made transparent.
  *
- * Implements the Scalable Reliable Multicast (SRM) Framework in the paper:
+ * Implements the Scalable Reliable Multicast (SRM) Framework from the paper:
  * Floyd, S., Jacobson, V., Liu, C.-G., McCanne, S., & Zhang, L. (1997).
  * A reliable multicast framework for light-weight sessions and application level framing.
  * IEEE/ACM Transactions on Networking, 5(6), 784&ndash;803.
  *
- * @author Team Snorlax:
- * Bingzhe Jin, Kaixun Yang, Shizhan Xu, Zhen Cai
+ * @author Team Snorlax @ The University of Melbourne:
+ * Bingzhe Jin (1080774), Kaixun Yang (1040203), Shizhan Xu (771900), Zhen Cai (1049487)
  */
 public class ReliableMulticastSocket extends MulticastSocket
 {
@@ -49,6 +49,13 @@ public class ReliableMulticastSocket extends MulticastSocket
 	 * the method ReliableMulticastSocket::receive to fetch from.
 	 */
 	protected final DataCache cache = new DataCache(5);
+	/**
+	 * A background thread which receives all datagram packet from the socket,
+	 * creates and dispatches tasks to handle them differently.
+	 */
+	private final ReceiverDispatcher rd = new ReceiverDispatcher(this);
+
+	protected final RequestRepairPool pool = new RequestRepairPool();
 
 	/** The dynamic rate of sending SESSION messages, in seconds, that
 	 *  the bandwidth consumed is adaptive to 5% of the aggregate bandwidth. */
@@ -111,7 +118,9 @@ public class ReliableMulticastSocket extends MulticastSocket
 		{
 			if (group != null) {
 				Message session = new Message(sequencer, getLocalPort(), Type.SESSION,
-						gson.toJson(states.getViewingPage()).getBytes());
+						gson.toJson(new SimpleEntry<>(
+								LocalTime.now(), gson.toJson(states.getViewingPage()))
+						).getBytes());
 				byte[] out = gson.toJson(session).getBytes();
 				DatagramPacket p = new DatagramPacket(out, out.length, group, getLocalPort());
 				try {
@@ -161,8 +170,7 @@ public class ReliableMulticastSocket extends MulticastSocket
 		logger.info("Multicasting DATA.");
 		_send(_p);
 		if (!getOption(StandardSocketOptions.IP_MULTICAST_LOOP)) {
-			states.put(data.getFrom(),
-					new AbstractMap.SimpleEntry<>(sequencer, LocalTime.now()));
+			states.put(data.getFrom(), new SimpleEntry<>(sequencer, LocalTime.now()));
 		}
 		sequencer++;
 	}

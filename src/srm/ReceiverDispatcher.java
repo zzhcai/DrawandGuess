@@ -5,7 +5,9 @@ import com.google.gson.JsonSyntaxException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.time.LocalTime;
-import java.util.AbstractMap;
+import java.time.temporal.ChronoUnit;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Map;
 import java.util.logging.Level;
 
 /**
@@ -43,7 +45,7 @@ public class ReceiverDispatcher extends Thread
 			msg = ReliableMulticastSocket.gson.fromJson(
 					new String(p.getData(), 0, p.getLength()), Message.class);
 			if (msg == null || msg.getFrom() == null || msg.getType() == null
-					|| msg.getPayload() == null) {
+					|| msg.getBody() == null) {
 				throw new JsonSyntaxException("Null in message.");
 			}
 			ReliableMulticastSocket.logger.info("Received "+msg.getType().name()+".");
@@ -55,7 +57,7 @@ public class ReceiverDispatcher extends Thread
 			return null;
 		}
 		// If in bad format, receives the next
-		catch (JsonSyntaxException ignored) {
+		catch (JsonSyntaxException e) {
 			return receive();
 		}
 	}
@@ -65,22 +67,52 @@ public class ReceiverDispatcher extends Thread
 	 *
 	 * @param msg the received message
 	 */
+	@SuppressWarnings("unchecked")
 	private void dispatch(Message msg)
 	{
 		switch (msg.getType()) {
 		// 1. Update states
 		// 2. Put cache
 		case DATA -> {
-			socket.states.putIfGreater(msg.getFrom(),
-					new AbstractMap.SimpleEntry<>(msg.getSeq(), LocalTime.now()));
+			socket.states.putIfAbsentOrGreater(msg.getFrom(),
+					new SimpleEntry<>(msg.getSeq(), LocalTime.now()));
 			socket.cache.put(msg);
 		}
+		// 1. Estimate one-way distances to other active sources
+		// 2. Compare view with states and update states
+		// 3. If any loss detected, submit request via pool
 		case SESSION -> {
+			LocalTime t;
+			Map<String, Long> view;
+			try {
+				SimpleEntry<LocalTime, String> pair = (SimpleEntry<LocalTime, String>)
+						ReliableMulticastSocket.gson.fromJson(
+								new String(msg.getBody()), Map.class);
+				if (pair != null && pair.getKey() != null && pair.getValue() != null) {   // valid?
+					t = pair.getKey();
+					view = ReliableMulticastSocket.gson.fromJson(pair.getValue(), Map.class);
+					if (view == null) return;
+				}
+				else return;
+			}
+			catch (JsonSyntaxException ignored) { return; }
 
+			for (var v : view.entrySet()) {
+				Long oldSeq = socket.states.putIfAbsentOrGreater(v.getKey(),
+						new SimpleEntry<>(v.getValue(), LocalTime.now()));
+				// Loss
+				if (oldSeq != null) {
+					for (long i = oldSeq + 1; i <= v.getValue(); i++) {
+						socket.pool.request(v.getKey(), i);
+					}
+				}
+			}
 		}
+		//
 		case REQUEST -> {
 			// TODO 1
 		}
+		//
 		case REPAIR -> {
 			// TODO 2
 		}

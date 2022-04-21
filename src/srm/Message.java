@@ -17,13 +17,20 @@ public class Message
 	private final String from;
 	/** Either one of those in enum class Type */
 	private final Type type;
-	/** The payload of the datagram packet */
-	private final byte[] payload;
+
+	/**
+	 * Body of the message:
+	 * 	- DATA: byte(payload)
+	 *  - SESSION: byte(jsonString of [localTime, jsonString of StateTable::getViewingPage])
+	 *  - REQUEST: byte(${whose}-${seq})
+	 *  - REPAIR: byte(jsonString of [${whose}-${seq}, byte(payload)])
+	 */
+	private final byte[] body;
 
 	/**
 	 * @param port the port number to which multicast socket is connected
 	 */
-	public Message(long seq, int port, Type type, byte[] payload)
+	public Message(long seq, int port, Type type, byte[] body)
 	{
 		this.seq = seq;
 		String address = null;
@@ -36,7 +43,7 @@ public class Message
 		}
 		this.from = (address != null ? address+"@" : "") + port + "@" + ProcessHandle.current().pid();
 		this.type = type;
-		this.payload = payload;
+		this.body = body;
 	}
 
 	public long getSeq() {
@@ -51,8 +58,8 @@ public class Message
 		return type;
 	}
 
-	public byte[] getPayload() {
-		return payload;
+	public byte[] getBody() {
+		return body;
 	}
 
 }

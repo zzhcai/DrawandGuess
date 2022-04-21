@@ -1,8 +1,12 @@
 package srm;
 
+import com.google.gson.JsonSyntaxException;
+
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
@@ -41,20 +45,37 @@ public class DataCache extends HashMap<Message, LocalTime>
 	/**
 	 * Cache a DATA/REPAIR message and queue its payload.
 	 */
+	@SuppressWarnings("unchecked")
 	protected void put(Message msg)
 	{
-		super.put(msg, LocalTime.now());
-		if (msg.getType() == Type.DATA || msg.getType() == Type.REPAIR) {
+		byte[] payload;
+		switch (msg.getType()) {
+		case DATA -> payload = msg.getBody();
+		case REPAIR -> {
 			try {
-				unconsumed.put(msg.getPayload());
+				SimpleEntry<String, byte[]> pair = (SimpleEntry<String, byte[]>)
+						ReliableMulticastSocket.gson.fromJson(new String(msg.getBody()), Map.class);
+				if (pair != null && pair.getValue() != null) payload = pair.getValue();   // valid?
+				else return;
 			}
-			catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			catch (JsonSyntaxException e) { return; }
 		}
+		default -> {
+			return;
+		}
+		}
+		try {
+			unconsumed.put(payload);
+		}
+		catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		super.put(msg, LocalTime.now());
 	}
 
-	/** Consume one queued datagram payload. */
+	/**
+	 * Consume one queued datagram payload.
+	 */
 	protected byte[] consume() throws InterruptedException {
 		return unconsumed.take();
 	}
