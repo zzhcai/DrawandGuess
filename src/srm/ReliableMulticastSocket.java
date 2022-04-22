@@ -14,11 +14,11 @@ import java.util.logging.*;
 
 /**
  * A reliable multicast socket class, made transparent.
- *
  * Implements the Scalable Reliable Multicast (SRM) Framework from the paper:
- * Floyd, S., Jacobson, V., Liu, C.-G., McCanne, S., & Zhang, L. (1997).
- * A reliable multicast framework for light-weight sessions and application level framing.
- * IEEE/ACM Transactions on Networking, 5(6), 784&ndash;803.
+ *
+   * Floyd, S., Jacobson, V., Liu, C.-G., McCanne, S., & Zhang, L. (1997).
+   * A reliable multicast framework for light-weight sessions and application level framing.
+   * IEEE/ACM Transactions on Networking, 5(6), 784&ndash;803.
  *
  * @author Team Snorlax @ The University of Melbourne:
  * Bingzhe Jin (1080774), Kaixun Yang (1040203), Shizhan Xu (771900), Zhen Cai (1049487)
@@ -35,28 +35,6 @@ public class ReliableMulticastSocket extends MulticastSocket
 	/** DATA packet sequencer */
 	private long sequencer = 0;
 
-	/**
-	 * Tracks the highest sequence number and arrival time,
-	 * received from each active source (including socket itself).
-	 * There is a periodic removal of those deprecated states
-	 * whose sequence number hasn't changed for a while.
-	 */
-	protected final StateTable states = new StateTable(5, 1);
-	/**
-	 * A cache of recent DATA/REPAIR messages, keeping arrival time,
-	 * with a periodic removal of those considered deprecated.
-	 * Also contains a queue of unconsumed datagram packets for
-	 * the method ReliableMulticastSocket::receive to fetch from.
-	 */
-	protected final DataCache cache = new DataCache(5);
-	/**
-	 * A background thread which receives all datagram packet from the socket,
-	 * creates and dispatches tasks to handle them differently.
-	 */
-	private final ReceiverDispatcher rd = new ReceiverDispatcher(this);
-
-	protected final RequestRepairPool pool = new RequestRepairPool();
-
 	/** The dynamic rate of sending SESSION messages, in seconds, that
 	 *  the bandwidth consumed is adaptive to 5% of the aggregate bandwidth. */
 	private long sessionRate = SESSION_RATE_MIN;
@@ -69,6 +47,12 @@ public class ReliableMulticastSocket extends MulticastSocket
 	private final AtomicInteger aggregBW = new AtomicInteger(0);
 	/** The session bandwidth. */
 	private final AtomicInteger sessionBW = new AtomicInteger(0);
+
+	/** Components */
+	protected final StateTable states = new StateTable(1);
+	protected final DataCache cache = new DataCache(5);
+	protected final RequestRepairPool pool = new RequestRepairPool();
+	private final ReceiverDispatcher rd = new ReceiverDispatcher(this);
 
 	/**
 	 * Constructs a multicast socket and
@@ -105,7 +89,23 @@ public class ReliableMulticastSocket extends MulticastSocket
 		}
 
 		// Session sending routines
-		sessionSender.schedule(new SessionSendTask(), sessionRate * 1000L);
+		new SessionSendTask().run();
+	}
+
+	/**
+	 * Returns ${IpAddress}@${Port}@${Pid}.
+	 */
+	protected String getFrom() {
+		String address = null;
+		try {
+			address = InetAddress.getLocalHost().getHostAddress();
+		}
+		catch (UnknownHostException e) {
+			ReliableMulticastSocket.logger.log(Level.WARNING,
+					"Cannot retrieve the address of the local host.", e);
+		}
+		return (address != null ? address+"@" : "") + getLocalPort() +
+				"@" + ProcessHandle.current().pid();
 	}
 
 	/**
@@ -117,10 +117,9 @@ public class ReliableMulticastSocket extends MulticastSocket
 		public void run()
 		{
 			if (group != null) {
-				Message session = new Message(sequencer, getLocalPort(), Type.SESSION,
-						gson.toJson(new SimpleEntry<>(
-								LocalTime.now(), gson.toJson(states.getViewingPage()))
-						).getBytes());
+				Message session = new Message(sequencer, getFrom(), Type.SESSION,
+						gson.toJson(new SimpleEntry<>(LocalTime.now(), states.getViewingPage()))
+								.getBytes());
 				byte[] out = gson.toJson(session).getBytes();
 				DatagramPacket p = new DatagramPacket(out, out.length, group, getLocalPort());
 				try {
@@ -163,14 +162,14 @@ public class ReliableMulticastSocket extends MulticastSocket
 	@Override
 	public synchronized void send(DatagramPacket p) throws IOException
 	{
-		Message data = new Message(sequencer, getLocalPort(), Type.DATA, p.getData());
+		Message data = new Message(sequencer, getFrom(), Type.DATA, p.getData());
 		byte[] out = gson.toJson(data).getBytes();
 		DatagramPacket _p = new DatagramPacket(out, out.length,
 				p.getAddress(), p.getPort());
 		logger.info("Multicasting DATA.");
 		_send(_p);
 		if (!getOption(StandardSocketOptions.IP_MULTICAST_LOOP)) {
-			states.put(data.getFrom(), new SimpleEntry<>(sequencer, LocalTime.now()));
+			states.update(data.from(), sequencer, null);
 		}
 		sequencer++;
 	}
@@ -209,10 +208,9 @@ public class ReliableMulticastSocket extends MulticastSocket
 		super.close();
 		sessionSender.cancel();
 		// TODO: stop pool
-		states.getUpdater().cancel();
 		cache.getUpdater().cancel();
-		sessionSender.purge();   // for garbage collection
-		states.getUpdater().purge();
+		// For garbage collection
+		sessionSender.purge();
 		cache.getUpdater().purge();
 	}
 

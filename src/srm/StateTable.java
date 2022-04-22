@@ -2,73 +2,64 @@ package srm;
 
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
- * Tracks the highest sequence number and arrival time,
- * received from each active source (including socket itself).
- * There is a periodic removal of those deprecated states
- * whose sequence number hasn't changed for a while.
+ * Tracks states received from each active source (including self).
  */
-public class StateTable extends ConcurrentHashMap<String, SimpleEntry<Long, LocalTime>>
+public class StateTable extends ConcurrentHashMap<String, StateTable.State>
 {
-	/** How long a state is kept, in minutes */
-	private long ttl;
-	/** How recent the currently-viewing page filters states by, in minutes */
-	private long tView;
-	private final Timer updater = new Timer();
+	/**
+	 * @param seq the highest sequence number
+	 * @param t when seq was incremented
+	 * @param dist estimated one-way distance, in seconds;
+	 *  		   null if distance is unknown, in particular for self state.
+	 *  		   Note that this estimate does not assume synchronized clocks,
+	 * 			   while it does assume that paths are roughly symmetric.
+	 */
+	protected record State(long seq, Long dist, LocalTime t) {
+	}
 
-	public StateTable(long ttl, long tView) {
-		this.ttl = ttl;
+	/** How recent the currently-viewing page filters states by, in minutes */
+	private final long tView;
+
+	public StateTable(long tView) {
 		this.tView = tView;
-		updater.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				ReliableMulticastSocket.logger.info("Removing deprecated from states.");
-				forEach((k, v) -> {
-					if (ChronoUnit.MINUTES.between(v.getValue(), LocalTime.now()) > ttl) {
-						remove(k);
-					}
-				});
-			}
-		}, ttl * 60000, ttl * 60000);
 	}
 
 	/**
 	 * Returns the currently-viewing page on states.
+	 *
+	 * @return {from: [seq, dist]}
 	 */
-	protected Map<String, Long> getViewingPage() {
+	protected Map<String, Long[]> getViewingPage() {
 		return entrySet().stream()
 				.filter(c -> ChronoUnit.MINUTES.between(
-						c.getValue().getValue(), LocalTime.now()) <= tView)
-				.collect(Collectors.toMap(
-						Map.Entry::getKey, c -> c.getValue().getKey()));
+						c.getValue().t, LocalTime.now()) <= tView)
+				.collect(Collectors.toMap(Map.Entry::getKey,
+						c -> new Long[]{c.getValue().seq, c.getValue().dist}));
 	}
 
 	/**
-	 * Thread-safe, put if the given sequence number is greater.
+	 * Thread-safe, update the state of one active source.
 	 *
-	 * @return old v; null if absent or smaller
+	 * @param seq update if either absent or greater
+	 * @param dist new one-way distance, in seconds; won't update if null
+	 * @return old seq associated with from; null if absent
 	 */
-	protected Long putIfAbsentOrGreater(String k, SimpleEntry<Long, LocalTime> v) {
-		SimpleEntry<Long, LocalTime> curr;
+	public Long update(String from, long seq, Long dist)
+	{
+		LocalTime now = LocalTime.now();
+		State old = putIfAbsent(from, new State(seq, dist, now));
+		if (old == null) return null;
+		if (dist == null) dist = old.dist;
 		while (true) {
-			curr = get(k);
-			if (curr == null) {
-				if (putIfAbsent(k, v) == null) return null;
-			}
-			else if (v.getKey() <= curr.getKey()) return null;
-			else if (replace(k, curr, v)) return curr.getKey();
+			State curr = new State(Math.max(seq, old.seq), dist, now);
+			if (replace(from, old, curr)) return old.seq;
+			old = get(from);
 		}
-	}
-
-	protected Timer getUpdater() {
-		return updater;
 	}
 
 }
