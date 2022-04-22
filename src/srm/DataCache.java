@@ -50,12 +50,12 @@ public class DataCache extends ConcurrentHashMap<Message, LocalTime>
 	protected void put(Message msg)
 	{
 		byte[] payload;
-		switch (msg.type()) {
-		case DATA -> payload = msg.body();
+		switch (msg.getType()) {
+		case DATA -> payload = msg.getBody();
 		case REPAIR -> {
 			try {
 				AbstractMap.SimpleEntry<String, byte[]> pair = (AbstractMap.SimpleEntry<String, byte[]>)
-						ReliableMulticastSocket.gson.fromJson(new String(msg.body()), Map.class);
+						ReliableMulticastSocket.gson.fromJson(new String(msg.getBody()), Map.class);
 				if (pair != null && pair.getValue() != null) payload = pair.getValue();   // valid?
 				else return;
 			}

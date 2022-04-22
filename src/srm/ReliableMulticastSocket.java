@@ -6,7 +6,6 @@ import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.net.*;
 import java.time.LocalTime;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -30,10 +29,10 @@ public class ReliableMulticastSocket extends MulticastSocket
 	protected static Gson gson = new GsonBuilder().serializeNulls().create();   // JSON converter
 
 	/** Group IP address */
-	private InetAddress group = null;
+	private volatile InetAddress group = null;
 
 	/** DATA packet sequencer */
-	private long sequencer = 0;
+	private long sequencer = 1;
 
 	/** The dynamic rate of sending SESSION messages, in seconds, that
 	 *  the bandwidth consumed is adaptive to 5% of the aggregate bandwidth. */
@@ -88,8 +87,11 @@ public class ReliableMulticastSocket extends MulticastSocket
 			logger.log(Level.SEVERE, "Error occurs in logger.", e);
 		}
 
-		// Session sending routines
-		new SessionSendTask().run();
+		// Receiving at background starts
+		rd.start();
+
+		// Session sending routines, starts once group is specified
+		sessionSender.schedule(new SessionSendTask(), 0);
 	}
 
 	/**
@@ -108,6 +110,7 @@ public class ReliableMulticastSocket extends MulticastSocket
 				"@" + ProcessHandle.current().pid();
 	}
 
+	private boolean isFirstSession = true;
 	/**
 	 * Task to multicast SESSION messages.
 	 */
@@ -116,24 +119,24 @@ public class ReliableMulticastSocket extends MulticastSocket
 		@Override
 		public void run()
 		{
-			if (group != null) {
-				Message session = new Message(sequencer, getFrom(), Type.SESSION,
-						gson.toJson(new SimpleEntry<>(LocalTime.now(), states.getViewingPage()))
-								.getBytes());
-				byte[] out = gson.toJson(session).getBytes();
-				DatagramPacket p = new DatagramPacket(out, out.length, group, getLocalPort());
-				try {
-					_send(p);
-					logger.info("Multicasting SESSION.");
-					sessionBW.addAndGet(p.getLength());   // inc
-				}
-				catch (IOException e) {
-					e.printStackTrace();
-				}
-				updateSessionRate();
+			while (group == null) Thread.onSpinWait();
+			Message session = new Message(sequencer, getFrom(), Type.SESSION,
+					gson.toJson(new Message.SessionBody(LocalTime.now().toString(), states.getViewingPage()))
+							.getBytes());
+			byte[] out = gson.toJson(session).getBytes();
+			DatagramPacket p = new DatagramPacket(out, out.length, group, getLocalPort());
+			try {
+				_send(p);
+				logger.info("Multicasting SESSION.");
+				sessionBW.addAndGet(p.getLength());   // inc
 			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+			if (!isFirstSession) updateSessionRate();
+			isFirstSession = false;
 			// Schedule next
-			new Timer().schedule(new SessionSendTask(), sessionRate * 1000L);
+			sessionSender.schedule(new SessionSendTask(), sessionRate * 1000L);
 		}
 	}
 
@@ -169,7 +172,7 @@ public class ReliableMulticastSocket extends MulticastSocket
 		logger.info("Multicasting DATA.");
 		_send(_p);
 		if (!getOption(StandardSocketOptions.IP_MULTICAST_LOOP)) {
-			states.update(data.from(), sequencer, null);
+			states.update(data.getFrom(), sequencer, null);
 		}
 		sequencer++;
 	}
