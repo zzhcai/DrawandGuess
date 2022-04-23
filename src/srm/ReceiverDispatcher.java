@@ -80,14 +80,17 @@ public class ReceiverDispatcher extends Thread
 	{
 		switch (msg.getType())
 		{
-		// 1. Put cache
-		// 2. Update states
+		// 1. Update states
+		// 2. Put cache if DATA is new
 		// 3. Repair a request in pool if there is
 		// 4. If any loss detected, submit request via pool
 		case DATA -> {
-			socket.cache.put(msg);
 			Long oldSeq = socket.states.update(msg.getFrom(), msg.getSeq(), null);
-			// TODO: 3
+			if (oldSeq != null && msg.getSeq() <= oldSeq) {
+				// TODO: 3
+				return;
+			}
+			else socket.cache.put(msg);
 			if (oldSeq != null) {
 				for (long i = oldSeq + 1; i < msg.getSeq(); i++) {
 					socket.pool.request(msg.getFrom(), i);
@@ -130,7 +133,7 @@ public class ReceiverDispatcher extends Thread
 				}
 			}
 			// New t12 at the first time receiving x's SESSION.
-			// Case 1: never hears about x from others, i.e. no states, then inserts new;
+			// Case 1: never heard about x from others, i.e. no states, then inserts new;
 			// Case 2: heard from others, or received its DATA, i.e. seq already set up, then sets distance only.
 			// Both can be handled by StateTable::update.
 			socket.states.update(msg.getFrom(), 0, dist);

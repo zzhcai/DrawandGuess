@@ -4,8 +4,6 @@ import com.google.gson.JsonSyntaxException;
 
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.AbstractMap;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
@@ -46,7 +44,6 @@ public class DataCache extends ConcurrentHashMap<Message, LocalTime>
 	/**
 	 * Cache a DATA/REPAIR message and queue its payload.
 	 */
-	@SuppressWarnings("unchecked")
 	protected void put(Message msg)
 	{
 		byte[] payload;
@@ -54,9 +51,9 @@ public class DataCache extends ConcurrentHashMap<Message, LocalTime>
 		case DATA -> payload = msg.getBody();
 		case REPAIR -> {
 			try {
-				AbstractMap.SimpleEntry<String, byte[]> pair = (AbstractMap.SimpleEntry<String, byte[]>)
-						ReliableMulticastSocket.gson.fromJson(new String(msg.getBody()), Map.class);
-				if (pair != null && pair.getValue() != null) payload = pair.getValue();   // valid?
+				Message.RepairBody body = ReliableMulticastSocket.gson.fromJson(
+						new String(msg.getBody()), Message.RepairBody.class);
+				if (body != null && body.payload != null) payload = body.payload;
 				else return;
 			}
 			catch (JsonSyntaxException e) { return; }
