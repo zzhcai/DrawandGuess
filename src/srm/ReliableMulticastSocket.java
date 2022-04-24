@@ -29,10 +29,9 @@ public class ReliableMulticastSocket extends MulticastSocket
 	protected static Gson gson = new GsonBuilder().serializeNulls().create();   // JSON converter
 
 	/** Group IP address */
-	private volatile InetAddress group = null;
-
+	protected volatile InetAddress group = null;
 	/** DATA packet sequencer */
-	private long sequencer = 1;
+	protected long sequencer = 1;
 
 	/** The dynamic rate of sending SESSION messages, in seconds, that
 	 *  the bandwidth consumed is adaptive to 5% of the aggregate bandwidth. */
@@ -50,7 +49,7 @@ public class ReliableMulticastSocket extends MulticastSocket
 	/** Components */
 	protected final StateTable states = new StateTable(1);
 	protected final DataCache cache = new DataCache(5);
-	protected final RequestRepairPool pool = new RequestRepairPool();
+	protected final RequestRepairPool pool = new RequestRepairPool(this);
 	private final ReceiverDispatcher rd = new ReceiverDispatcher(this);
 
 	/**
@@ -216,7 +215,6 @@ public class ReliableMulticastSocket extends MulticastSocket
 		sessionSender.purge();
 		cache.getUpdater().purge();
 	}
-
 	/** Disabled. */
 	@Override
 	public void connect(InetAddress address, int port) {
