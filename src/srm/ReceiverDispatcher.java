@@ -87,10 +87,10 @@ public class ReceiverDispatcher extends Thread
 		case DATA -> {
 			Long oldSeq = socket.states.update(msg.getFrom(), msg.getSeq(), null);
 			if (oldSeq != null && msg.getSeq() <= oldSeq) {
-				// TODO: 3
+				socket.pool.cancelRequest(msg.getFrom(), msg.getSeq());
 				return;
 			}
-			else socket.cache.put(msg);
+			else socket.cache.put(msg.getFrom()+'-'+msg.getSeq(), msg.getBody());
 			if (oldSeq != null) {
 				for (long i = oldSeq + 1; i < msg.getSeq(); i++) {
 					socket.pool.request(msg.getFrom(), i);
@@ -138,15 +138,49 @@ public class ReceiverDispatcher extends Thread
 			// Both can be handled by StateTable::update.
 			socket.states.update(msg.getFrom(), 0, dist);
 		}
-		//
+
+		// 1. If the repair is in the pool, do nothing
+		// 2. If the repair is not in the pool, the request is in the pool, recreate the request
+		// 3. If the repair and request are not in the pool, put the repair into the pool
 		case REQUEST -> {
-			// TODO REQUEST
+			String dataID = new String(msg.getBody());
+			String[] whose_seq = dataID.split("-");
+			String whose = whose_seq[0];
+			long seq = Long.parseLong(whose_seq[1]);
+			if (!socket.pool.repairTasks.containsKey(dataID)) {
+				if(!socket.pool.requestTasks.containsKey(dataID)) {
+					socket.pool.repair(whose, seq, socket.cache.get(dataID).getKey());
+				} else {
+					socket.pool.cancelRequest(whose, seq);
+					socket.pool.request(whose, seq);
+				}
+			}
 		}
-		//
+
+		// 1. If the request is in the pool, remove the request and store the data in the cache
+		// 2. If the repair is in the pool, remove the repair
+		// 3. Otherwise, do nothing
 		case REPAIR -> {
-			// TODO REPAIR
+			String dataID;
+			byte[] payload;
+			Message.RepairBody body = ReliableMulticastSocket.gson.fromJson(
+					new String(msg.getBody()), Message.RepairBody.class);
+			if (body != null && body.whose_seq != null && body.payload != null) {
+				dataID = body.whose_seq;
+				payload = body.payload;
+			}
+			else return;
+
+			String[] whose_seq = dataID.split("-");
+			String whose = whose_seq[0];
+			long seq = Long.parseLong(whose_seq[1]);
+
+			if(socket.pool.requestTasks.containsKey(dataID)) {
+				socket.pool.cancelRequest(whose, seq);
+				socket.cache.put(dataID, payload);
+			}
+			if(socket.pool.repairTasks.containsKey(dataID)) socket.pool.cancelRequest(whose, seq);
 		}
 		}
 	}
-
 }

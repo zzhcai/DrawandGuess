@@ -4,11 +4,13 @@ import com.google.gson.JsonSyntaxException;
 
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.AbstractMap.SimpleEntry;
 
 /**
  * A cache of recent DATA/REPAIR messages, keeping arrival time,
@@ -16,7 +18,7 @@ import java.util.concurrent.LinkedBlockingDeque;
  * Also contains a queue of unconsumed datagram payload for
  * the method ReliableMulticastSocket::receive to fetch from.
  */
-public class DataCache extends ConcurrentHashMap<Message, LocalTime>
+public class DataCache extends ConcurrentHashMap<String, SimpleEntry<byte[], LocalTime>>
 {
 	/** How long a message is kept, in minutes */
 	private final long ttl;
@@ -33,7 +35,7 @@ public class DataCache extends ConcurrentHashMap<Message, LocalTime>
 			public void run() {
 				ReliableMulticastSocket.logger.info("Removing deprecated from cache.");
 				forEach((k, v) -> {
-					if (ChronoUnit.MINUTES.between(v, LocalTime.now()) > ttl) {
+					if (ChronoUnit.MINUTES.between(v.getValue(), LocalTime.now()) > ttl) {
 						remove(k);
 					}
 				});
@@ -44,31 +46,32 @@ public class DataCache extends ConcurrentHashMap<Message, LocalTime>
 	/**
 	 * Cache a DATA/REPAIR message and queue its payload.
 	 */
-	protected void put(Message msg)
+	protected void put(String whose_seq, byte[] payload)
 	{
-		byte[] payload;
-		switch (msg.getType()) {
-		case DATA -> payload = msg.getBody();
-		case REPAIR -> {
-			try {
-				Message.RepairBody body = ReliableMulticastSocket.gson.fromJson(
-						new String(msg.getBody()), Message.RepairBody.class);
-				if (body != null && body.payload != null) payload = body.payload;
-				else return;
-			}
-			catch (JsonSyntaxException e) { return; }
-		}
-		default -> {
-			return;
-		}
-		}
+//		byte[] payload;
+//		switch (msg.getType()) {
+//		case DATA -> payload = msg.getBody();
+//		case REPAIR -> {
+//			try {
+//				Message.RepairBody body = ReliableMulticastSocket.gson.fromJson(
+//						new String(msg.getBody()), Message.RepairBody.class);
+//				if (body != null && body.payload != null) payload = body.payload;
+//				else return;
+//			}
+//			catch (JsonSyntaxException e) { return; }
+//		}
+//		default -> {
+//			return;
+//		}
+//		}
 		try {
 			unconsumed.put(payload);
 		}
 		catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		super.put(msg, LocalTime.now());
+
+		super.put(whose_seq, new SimpleEntry<>(payload, LocalTime.now()));
 	}
 
 	/**

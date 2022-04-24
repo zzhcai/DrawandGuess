@@ -209,7 +209,7 @@ public class ReliableMulticastSocket extends MulticastSocket
 	public void close() {
 		super.close();
 		sessionSender.cancel();
-		// TODO: stop pool
+		pool.close();
 		cache.getUpdater().cancel();
 		// For garbage collection
 		sessionSender.purge();

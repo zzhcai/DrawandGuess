@@ -17,9 +17,9 @@ public class RequestRepairPool
 {
 	private final ThreadPoolExecutor pool = (ThreadPoolExecutor)Executors.newCachedThreadPool();
 	private final ReliableMulticastSocket socket;
-	ConcurrentHashMap<String, Runnable> requestTasks = new ConcurrentHashMap<>();
-	ConcurrentHashMap<String, Runnable> repairTasks = new ConcurrentHashMap<>();
-	protected static Gson gson = new GsonBuilder().serializeNulls().create();
+	protected ConcurrentHashMap<String, Runnable> requestTasks = new ConcurrentHashMap<>();
+	protected ConcurrentHashMap<String, Runnable> repairTasks = new ConcurrentHashMap<>();
+	private static Gson gson = new GsonBuilder().serializeNulls().create();
 
 	public RequestRepairPool(ReliableMulticastSocket socket) {
 		this.socket = socket;
@@ -30,7 +30,7 @@ public class RequestRepairPool
 		Runnable task = new Runnable() {
 			@Override
 			public void run() {
-				while (socket.getGroup() == null) Thread.onSpinWait();
+				while (socket.group == null) Thread.onSpinWait();
 				try {
 					Thread.sleep(5000);
 				} catch (InterruptedException e) {
@@ -55,7 +55,7 @@ public class RequestRepairPool
 		Runnable task = new Runnable() {
 			@Override
 			public void run() {
-				while (socket.getGroup() == null) Thread.onSpinWait();
+				while (socket.group == null) Thread.onSpinWait();
 				try {
 					Thread.sleep(5000);
 				} catch (InterruptedException e) {
@@ -78,13 +78,23 @@ public class RequestRepairPool
 
 	protected synchronized void cancelRequest(String whose, long seq) {
 		String taskID = whose + '-' + seq;
-		Runnable task = requestTasks.get(taskID);
-		pool.remove(task);
+		if(requestTasks.containsKey(taskID)) {
+			Runnable task = requestTasks.get(taskID);
+			pool.remove(task);
+			requestTasks.remove(taskID);
+		}
 	}
 
 	protected synchronized void cancelRepair(String whose, long seq) {
 		String taskID = whose + '-' + seq;
-		Runnable task = repairTasks.get(taskID);
-		pool.remove(task);
+		if(repairTasks.containsKey(taskID)) {
+			Runnable task = repairTasks.get(taskID);
+			pool.remove(task);
+			repairTasks.remove(taskID);
+		}
+	}
+
+	protected void close() {
+		pool.shutdown();
 	}
 }
