@@ -29,7 +29,7 @@ public class ReliableMulticastSocket extends MulticastSocket
 	protected static Gson gson = new GsonBuilder().serializeNulls().create();   // JSON converter
 
 	/** Group IP address */
-	protected volatile InetAddress group = null;
+	private volatile InetAddress group = null;
 	/** DATA packet sequencer */
 	protected long sequencer = 1;
 
@@ -109,6 +109,16 @@ public class ReliableMulticastSocket extends MulticastSocket
 				"@" + ProcessHandle.current().pid();
 	}
 
+	/**
+	 * Blocks until the group becomes not null.
+	 *
+	 * @return group address
+	 */
+	protected InetAddress getGroup() {
+		while (group == null) Thread.onSpinWait();
+		return group;
+	}
+
 	private boolean isFirstSession = true;
 	/**
 	 * Task to multicast SESSION messages.
@@ -118,12 +128,11 @@ public class ReliableMulticastSocket extends MulticastSocket
 		@Override
 		public void run()
 		{
-			while (group == null) Thread.onSpinWait();
 			Message session = new Message(sequencer, getFrom(), Type.SESSION,
-					gson.toJson(new Message.SessionBody(LocalTime.now().toString(), states.getViewingPage()))
-							.getBytes());
+					gson.toJson(new Message.SessionBody(
+							LocalTime.now().toString(), states.getViewingPage())).getBytes());
 			byte[] out = gson.toJson(session).getBytes();
-			DatagramPacket p = new DatagramPacket(out, out.length, group, getLocalPort());
+			DatagramPacket p = new DatagramPacket(out, out.length, getGroup(), getLocalPort());
 			try {
 				_send(p);
 				logger.info("Multicasting SESSION.");
@@ -158,6 +167,7 @@ public class ReliableMulticastSocket extends MulticastSocket
 	@Override
 	public void leaveGroup(SocketAddress mcastaddr, NetworkInterface netIf) throws IOException {
 		super.leaveGroup(mcastaddr, netIf);
+		group = null;
 	}
 
 	// send DATA only
@@ -215,6 +225,7 @@ public class ReliableMulticastSocket extends MulticastSocket
 		sessionSender.purge();
 		cache.getUpdater().purge();
 	}
+
 	/** Disabled. */
 	@Override
 	public void connect(InetAddress address, int port) {

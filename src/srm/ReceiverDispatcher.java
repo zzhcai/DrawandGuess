@@ -81,25 +81,27 @@ public class ReceiverDispatcher extends Thread
 		switch (msg.getType())
 		{
 		// 1. Update states
-		// 2. Put cache if DATA is new
-		// 3. Repair a request in pool if there is
-		// 4. If any loss detected, submit request via pool
+		// 2. Cancel a request in pool if there is
+		// 3. If any loss detected, submit REQUEST via pool
+		// 4. Put cache if DATA payload was never received
 		case DATA -> {
 			Long oldSeq = socket.states.update(msg.getFrom(), msg.getSeq(), null);
-			if (oldSeq != null && msg.getSeq() <= oldSeq) {
-				socket.pool.cancelRequest(msg.getFrom(), msg.getSeq());
-				return;
-			}
-			else socket.cache.put(msg.getFrom()+'-'+msg.getSeq(), msg.getBody());
+			String whose_seq = msg.getFrom()+'-'+msg.getSeq();
 			if (oldSeq != null) {
+				if (socket.pool.requestTasks.containsKey(whose_seq)) {
+					socket.pool.cancelRequest(whose_seq);
+				}
+				else if (msg.getSeq() <= oldSeq) return;
 				for (long i = oldSeq + 1; i < msg.getSeq(); i++) {
-					socket.pool.request(msg.getFrom(), i);
+					socket.pool.request(msg.getFrom()+'-'+i);
 				}
 			}
+			socket.cache.put(whose_seq, msg.getBody());
 		}
+
 		// 1. Estimate one-way distances to other active sources
 		// 2. Compare view with states and update states
-		// 3. If any loss detected, submit request via pool
+		// 3. If any loss detected, submit REQUEST via pool
 		case SESSION -> {
 			long dist;   // t34
 			Map<String, Long[]> view;
@@ -126,61 +128,56 @@ public class ReceiverDispatcher extends Thread
 						Long oldSeq = socket.states.update(msg.getFrom(), seq, _dist);
 						if (oldSeq != null) {
 							for (long i = oldSeq + 1; i <= seq; i++) {
-								socket.pool.request(v.getKey(), i);
+								socket.pool.request(v.getKey()+'-'+i);
 							}
 						}
 					}
 				}
 			}
 			// New t12 at the first time receiving x's SESSION.
-			// Case 1: never heard about x from others, i.e. no states, then inserts new;
-			// Case 2: heard from others, or received its DATA, i.e. seq already set up, then sets distance only.
-			// Both can be handled by StateTable::update.
+			// - Case 1: never heard about x from others, i.e. no states, then inserts new;
+			// - Case 2: heard from others, or received its DATA, i.e. seq already set up, then sets distance only.
+			// Either can be handled by StateTable::update.
 			socket.states.update(msg.getFrom(), 0, dist);
 		}
 
-		// 1. If the repair is in the pool, do nothing
-		// 2. If the repair is not in the pool, the request is in the pool, recreate the request
-		// 3. If the repair and request are not in the pool, put the repair into the pool
+		// 1. If repair in pool, stop and do nothing
+		// 2. Postpone a request in pool if there is
+		// 3. Otherwise, if DATA payload found in cache, submit REPAIR via pool
 		case REQUEST -> {
-			String dataID = new String(msg.getBody());
-			String[] whose_seq = dataID.split("-");
-			String whose = whose_seq[0];
-			long seq = Long.parseLong(whose_seq[1]);
-			if (!socket.pool.repairTasks.containsKey(dataID)) {
-				if(!socket.pool.requestTasks.containsKey(dataID)) {
-					socket.pool.repair(whose, seq, socket.cache.get(dataID).getKey());
+			String whose_seq = new String(msg.getBody());
+			if (!socket.pool.repairTasks.containsKey(whose_seq)) {
+				if (!socket.pool.requestTasks.containsKey(whose_seq)) {
+					socket.pool.repair(whose_seq);
 				} else {
-					socket.pool.cancelRequest(whose, seq);
-					socket.pool.request(whose, seq);
+					socket.pool.cancelRequest(whose_seq);
+					socket.pool.request(whose_seq);
 				}
 			}
 		}
 
-		// 1. If the request is in the pool, remove the request and store the data in the cache
-		// 2. If the repair is in the pool, remove the repair
-		// 3. Otherwise, do nothing
+		// 1. Cancel a request in pool if there is, then put cache
+		// 2. Cancel a repair in pool if there is
 		case REPAIR -> {
-			String dataID;
+			String whose_seq;
 			byte[] payload;
-			Message.RepairBody body = ReliableMulticastSocket.gson.fromJson(
-					new String(msg.getBody()), Message.RepairBody.class);
-			if (body != null && body.whose_seq != null && body.payload != null) {
-				dataID = body.whose_seq;
-				payload = body.payload;
+			try {
+				Message.RepairBody body = ReliableMulticastSocket.gson.fromJson(
+						new String(msg.getBody()), Message.RepairBody.class);
+				if (body != null && body.whose_seq != null && body.payload != null) {
+					whose_seq = body.whose_seq;
+					payload = body.payload;
+				} else return;
 			}
-			else return;
+			catch (JsonSyntaxException e) { return; }
 
-			String[] whose_seq = dataID.split("-");
-			String whose = whose_seq[0];
-			long seq = Long.parseLong(whose_seq[1]);
-
-			if(socket.pool.requestTasks.containsKey(dataID)) {
-				socket.pool.cancelRequest(whose, seq);
-				socket.cache.put(dataID, payload);
+			if (socket.pool.requestTasks.containsKey(whose_seq)) {
+				socket.cache.put(whose_seq, payload);
 			}
-			if(socket.pool.repairTasks.containsKey(dataID)) socket.pool.cancelRequest(whose, seq);
+			socket.pool.cancelRequest(whose_seq);
+			socket.pool.cancelRepair(whose_seq);
 		}
 		}
 	}
+
 }
