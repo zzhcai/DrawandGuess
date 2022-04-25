@@ -1,20 +1,17 @@
 package srm;
 
-import com.google.gson.JsonSyntaxException;
-
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.AbstractMap.SimpleEntry;
 
 /**
- * A cache of recent DATA/REPAIR messages, keeping arrival time,
- * with a periodic removal of those considered deprecated.
+ * A cache of recent DATA/REPAIR payload to feed REPAIR, from each data source.
+ * Keeps arrival time, with a periodic removal of those considered deprecated.
  * Also contains a queue of unconsumed datagram payload for
  * the method ReliableMulticastSocket::receive to fetch from.
  */
@@ -44,33 +41,15 @@ public class DataCache extends ConcurrentHashMap<String, SimpleEntry<byte[], Loc
 	}
 
 	/**
-	 * Cache a DATA/REPAIR message and queue its payload.
+	 * Queue and cache a DATA/REPAIR payload.
 	 */
-	protected void put(String whose_seq, byte[] payload)
-	{
-//		byte[] payload;
-//		switch (msg.getType()) {
-//		case DATA -> payload = msg.getBody();
-//		case REPAIR -> {
-//			try {
-//				Message.RepairBody body = ReliableMulticastSocket.gson.fromJson(
-//						new String(msg.getBody()), Message.RepairBody.class);
-//				if (body != null && body.payload != null) payload = body.payload;
-//				else return;
-//			}
-//			catch (JsonSyntaxException e) { return; }
-//		}
-//		default -> {
-//			return;
-//		}
-//		}
+	protected void put(String whose_seq, byte[] payload) {
 		try {
 			unconsumed.put(payload);
 		}
 		catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-
 		super.put(whose_seq, new SimpleEntry<>(payload, LocalTime.now()));
 	}
 
