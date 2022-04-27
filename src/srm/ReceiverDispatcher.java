@@ -7,6 +7,7 @@ import java.net.DatagramPacket;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 
 /**
@@ -150,8 +151,9 @@ public class ReceiverDispatcher extends Thread
 				if (!socket.pool.requestTasks.containsKey(whose_seq)) {
 					socket.pool.repair(whose_seq);
 				} else {
+                    RequestRepairPool.requestTask task = socket.pool.requestTasks.get(whose_seq);
+				    task.setDoneFlag(false);
 					socket.pool.cancelRequest(whose_seq);
-					socket.pool.request(whose_seq);
 				}
 			}
 		}
@@ -173,6 +175,8 @@ public class ReceiverDispatcher extends Thread
 
 			if (socket.pool.requestTasks.containsKey(whose_seq)) {
 				socket.cache.put(whose_seq, payload);
+                RequestRepairPool.requestTask task = socket.pool.requestTasks.get(whose_seq);
+                task.setDoneFlag(true);
 			}
 			socket.pool.cancelRequest(whose_seq);
 			socket.pool.cancelRepair(whose_seq);

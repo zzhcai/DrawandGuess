@@ -5,7 +5,9 @@ import java.net.DatagramPacket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.Random;
 
 /**
  * A container of request/repair timers.
@@ -13,16 +15,85 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class RequestRepairPool
 {
 	private final ReliableMulticastSocket socket;
-
 	/** A size-adaptive thread pool */
 	private final ThreadPoolExecutor pool = (ThreadPoolExecutor) Executors.newCachedThreadPool();
 
-	protected final Map<String, Runnable> requestTasks = new HashMap<>();
-	protected final Map<String, Runnable> repairTasks = new HashMap<>();
+	protected final Map<String, requestTask> requestTasks = new HashMap<>();
+	protected final Map<String, repairTask> repairTasks = new HashMap<>();
+	protected final Map<String, Future<?>> requestFutures = new HashMap<>();
+	protected final Map<String, Future<?>> repairFutures = new HashMap<>();
 
 	public RequestRepairPool(ReliableMulticastSocket socket) {
 		this.socket = socket;
 	}
+
+	protected int C1 = 2;
+	protected int C2 = 2;
+	protected int D1 = 0;
+	protected int D2 = 0;
+
+	class requestTask implements Runnable {
+        private final Random random = new Random();
+        private int delay = random.nextInt(C1) + C2;
+        private DatagramPacket p;
+        private boolean doneFlag = false;
+
+        public requestTask(DatagramPacket p){
+            this.p = p;
+        }
+
+        @Override
+        public void run() {
+            //noinspection InfiniteLoopStatement
+            while(true) {
+                try {
+                    Thread.sleep(delay);
+                    delay *= 2;
+                } catch (InterruptedException e) {
+					e.printStackTrace();
+                    if(doneFlag) Thread.currentThread().interrupt();
+                    else delay *= 2;
+                }
+                try {
+                    socket._send(p);
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+
+        public void setDoneFlag(boolean doneFlag) {
+            this.doneFlag = doneFlag;
+        }
+    }
+
+    class repairTask implements Runnable {
+        private final Random random = new Random();
+        private int delay = random.nextInt(D1) + D2;
+        private DatagramPacket p;
+
+        public repairTask(DatagramPacket p){
+            this.p = p;
+        }
+
+        @Override
+        public void run() {
+            //noinspection InfiniteLoopStatement
+            while(true){
+				try {
+					Thread.sleep(delay);
+					delay *= 2;
+					socket._send(p);
+				}
+				catch (InterruptedException | IOException e) {
+					e.printStackTrace();
+					Thread.currentThread().interrupt();
+				}
+            }
+        }
+    }
 
 	/**
 	 * Schedule a request timer.
@@ -34,23 +105,10 @@ public class RequestRepairPool
 		Message request = new Message(socket.sequencer, socket.getFrom(), Type.REQUEST, whose_seq.getBytes());
 		byte[] out = ReliableMulticastSocket.gson.toJson(request).getBytes();
 		DatagramPacket p = new DatagramPacket(out, out.length, socket.getGroup(), socket.getLocalPort());
-		// Timer
-		Runnable task = () -> {
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-
-			try {
-				socket._send(p);
-			}
-			catch (IOException e) {
-				e.printStackTrace();
-			}
-		};
-		requestTasks.put(whose_seq, task);
-		pool.execute(task);
+        requestTask task = new requestTask(p);
+        requestTasks.put(whose_seq, task);
+		Future<?> future = pool.submit(task);
+        requestFutures.put(whose_seq, future);
 	}
 
 	/**
@@ -65,26 +123,35 @@ public class RequestRepairPool
 						whose_seq, socket.cache.get(whose_seq).getKey())).getBytes());
 		byte[] out = ReliableMulticastSocket.gson.toJson(repair).getBytes();
 		DatagramPacket p = new DatagramPacket(out, out.length, socket.getGroup(), socket.getLocalPort());
-		// Timer
-		Runnable task = () -> {
-			try {
-				Thread.sleep(5000);
-				socket._send(p);
-			}
-			catch (InterruptedException | IOException e) {
-				e.printStackTrace();
-			}
-		};
+
+		D1 = (int)StrictMath.log(socket.states.getViewingPage().size());
+		D2 = (int)StrictMath.log(socket.states.getViewingPage().size());
+		repairTask task = new repairTask(p);
+
 		repairTasks.put(whose_seq, task);
-		pool.execute(task);
+		Future<?> future = pool.submit(task);
+		repairFutures.put(whose_seq, future);
 	}
 
 	/**
 	 * Cancel a request timer if it is present.
 	 */
 	protected void cancelRequest(String whose_seq) {
-		Runnable task = requestTasks.get(whose_seq);
-		if (task != null && pool.remove(task)) {
+		Future<?> future = requestFutures.get(whose_seq);
+		requestTask task = requestTasks.get(whose_seq);
+		if (future != null && task != null) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			future.cancel(true);
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			requestFutures.remove(whose_seq);
 			requestTasks.remove(whose_seq);
 			ReliableMulticastSocket.logger.info("Request timer "+whose_seq+" is cancelled.");
 		}
@@ -94,8 +161,21 @@ public class RequestRepairPool
 	 * Cancel a repair timer if it is present.
 	 */
 	protected void cancelRepair(String whose_seq) {
-		Runnable task = repairTasks.get(whose_seq);
-		if (task != null && pool.remove(task)) {
+		repairTask task = repairTasks.get(whose_seq);
+		Future<?> future = repairFutures.get(whose_seq);
+		if (task != null && future != null) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			future.cancel(true);
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			repairFutures.remove(whose_seq);
 			repairTasks.remove(whose_seq);
 			ReliableMulticastSocket.logger.info("Repair timer "+whose_seq+" is cancelled.");
 		}
