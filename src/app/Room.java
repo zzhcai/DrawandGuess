@@ -9,6 +9,8 @@ public class Room {
     public int numPlayer;
     public int maxPlayer;
 //    private Host host;
+    public int timeLimit;
+    public String[] dictionary;
 
     public Room(String roomName, int numPlayer, int maxPlayer) {
         this.roomName = roomName;

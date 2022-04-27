@@ -14,7 +14,7 @@ public class DrawPane extends JPanel {
     private int size = 20;
     private Color color = Color.blue;
     private boolean rubber = false;
-    private final int ver = 0;
+    private final int ver = 2;
     private Image mouse;
     private Toolkit tk;
     private Cursor cu;
@@ -32,11 +32,47 @@ public class DrawPane extends JPanel {
             JButton backButton = new JButton("back");
             backButton.setBounds(1000, 10, 100, 30);
             backButton.setEnabled(false);
+            backButton.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    super.mouseEntered(e);
+                    JButton source = (JButton) e.getSource();
+                    source.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    x = -1;
+                    y = -1;
+                    repaint();
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    super.mouseExited(e);
+                    JButton source = (JButton) e.getSource();
+                    source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                }
+            });
 
 
             JButton nextButton = new JButton("next");
             nextButton.setBounds(1100, 10, 100, 30);
             nextButton.setEnabled(false);
+            nextButton.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    super.mouseEntered(e);
+                    JButton source = (JButton) e.getSource();
+                    source.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    x = -1;
+                    y = -1;
+                    repaint();
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    super.mouseExited(e);
+                    JButton source = (JButton) e.getSource();
+                    source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                }
+            });
 
             backButton.addActionListener(e -> {
                 lastLines.add(pointLines.get(pointLines.size()-1));
@@ -133,6 +169,24 @@ public class DrawPane extends JPanel {
         colorButton.addActionListener(e -> {
             color = JColorChooser.showDialog(null, "Choose pen color", color);
         });
+        colorButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e);
+                JButton source = (JButton) e.getSource();
+                source.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                x = -1;
+                y = -1;
+                repaint();
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                JButton source = (JButton) e.getSource();
+                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+        });
 
 
         this.add(colorButton);
@@ -147,6 +201,24 @@ public class DrawPane extends JPanel {
             sizeLabel.setText(String.valueOf(size));
         });
         sizeAdjust.setBounds(900, 50, 100, 30);
+        sizeAdjust.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e);
+                Scrollbar source = (Scrollbar) e.getSource();
+                source.setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
+                x = -1;
+                y = -1;
+                repaint();
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                Scrollbar source = (Scrollbar) e.getSource();
+                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+        });
         this.add(sizeAdjust);
 
 
@@ -185,6 +257,7 @@ public class DrawPane extends JPanel {
             Graphics2D g2 = (Graphics2D) g;
             for (ArrayList<ColorPoint> line: pointLines) {
                 if (line.size() > 0) {
+                    g.setColor(line.get(0).color);
                     g2.setColor(line.get(0).color);
                     g2.setStroke(new BasicStroke((float) (line.get(0).size*0.85)));
                     for (int i = 0; i < line.size(); i++) {

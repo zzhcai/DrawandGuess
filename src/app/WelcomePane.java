@@ -1,6 +1,9 @@
 package app;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class WelcomePane extends JPanel {
     private JTextField userName;
@@ -12,6 +15,21 @@ public class WelcomePane extends JPanel {
 
         userName = new JTextField();
         userName.setBounds(400, 600, 300, 50);
+        userName.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e);
+                JTextField source = (JTextField) e.getSource();
+                source.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                JTextField source = (JTextField) e.getSource();
+                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+        });
 
 
         submitButton = new JButton("Submit");
