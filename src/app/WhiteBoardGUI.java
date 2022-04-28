@@ -13,8 +13,8 @@ public class WhiteBoardGUI {
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 //        frame.add(new WelcomePane());
-        frame.add(lobbyScreen());
-//        frame.add(new WaitingRoomPane());
+//        frame.add(lobbyScreen());
+        frame.add(new WaitingRoomPane());
 //        frame.add(new GuessPane());
 //        frame.add(new DrawPane());
         frame.setVisible(true);

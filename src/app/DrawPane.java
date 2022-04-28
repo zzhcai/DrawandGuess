@@ -20,6 +20,8 @@ public class DrawPane extends JPanel {
     private Cursor cu;
     private int x = -1;
     private int y = -1;
+    private int round;
+    private int turn;
 
     public DrawPane() {
         super();

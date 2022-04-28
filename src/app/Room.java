@@ -3,15 +3,17 @@ package app;
 import java.net.InetAddress;
 import java.util.ArrayList;
 
-public class Room {
+public class Room implements Comparable<Room>{
     public int id;
     public InetAddress address;
     public String roomName;
     public int numPlayer;
     public int maxPlayer;
-//    private Host host;
+    private Player host;
     public int timeLimit;
     public ArrayList<String> dictionary = new ArrayList<>();
+    public ArrayList<Player> playerList = new ArrayList<>();
+    public int numRounds;
 
     public Room() {
         this.roomName = "someone's room";
@@ -23,5 +25,11 @@ public class Room {
         this.roomName = roomName;
         this.numPlayer = numPlayer;
         this.maxPlayer = maxPlayer;
+    }
+
+
+    @Override
+    public int compareTo(Room o) {
+        return o.id - this.id;
     }
 }

@@ -10,12 +10,13 @@ public class Player {
     private String[] words;
     private String[] guesses;
     private Graphics[] drawings;
-    public boolean isHost;
+    public boolean isHost = false;
     public boolean ready = false;
+    public Room room = null;
 
     public Player(String name) {
+
         this.name = name;
-        this.isHost = false;
     }
 
     public void joinRoom(InetAddress address) {
