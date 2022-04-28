@@ -168,8 +168,9 @@ public class RequestRepairPool
 	 */
 	protected void postponeRequest(String whose_seq)
 	{
-		if (requests.get(whose_seq) == null) return;
-		RequestTask task = requests.get(whose_seq).getKey();
+		SimpleEntry<RequestTask, Future<?>> pair = requests.get(whose_seq);
+		if (pair == null) return;
+		RequestTask task = pair.getKey();
 		Future<?> f = requests.get(whose_seq).getValue();
 		if (task != null && f != null && task.startedFlag &&
 				ChronoUnit.MILLIS.between(task.start, LocalTime.now()) > task.expire / 2) {
@@ -183,8 +184,9 @@ public class RequestRepairPool
 	 */
 	protected void cancelRequest(String whose_seq)
 	{
-		if (requests.get(whose_seq) == null) return;
-		RequestTask task = requests.get(whose_seq).getKey();
+		SimpleEntry<RequestTask, Future<?>> pair = requests.get(whose_seq);
+		if (pair == null) return;
+		RequestTask task = pair.getKey();
 		Future<?> f = requests.get(whose_seq).getValue();
 		if (task != null && f != null) {
 			task.doneFlag = true;
@@ -200,8 +202,9 @@ public class RequestRepairPool
 	 */
 	protected void cancelRepair(String whose_seq)
 	{
-		if (repairs.get(whose_seq) ==  null) return;
-		RepairTask task = repairs.get(whose_seq).getKey();
+		SimpleEntry<RepairTask, Future<?>> pair = repairs.get(whose_seq);
+		if (pair ==  null) return;
+		RepairTask task = pair.getKey();
 		Future<?> f = repairs.get(whose_seq).getValue();
 		if (task != null && f != null) {
 			while (!task.startedFlag) Thread.onSpinWait();
