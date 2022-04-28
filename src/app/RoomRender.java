@@ -31,6 +31,6 @@ public class RoomRender extends JPanel implements ListCellRenderer<Room> {
 
     @Override
     public Dimension getPreferredSize() {
-        return new Dimension(600, 100);
+        return new Dimension(596, 100);
     }
 }

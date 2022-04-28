@@ -130,6 +130,7 @@ public class LobbyPane extends JPanel {
         this.add(searchBar);
         this.add(searchButton);
 
+//        createRoom();
     }
 
     private void createRoom() {
