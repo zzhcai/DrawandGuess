@@ -79,11 +79,11 @@ public class RequestRepairPool
 		static boolean firstRepair = true;
 		boolean startedFlag = false;
 		final DatagramPacket p;
-		final String whose;
+		final String whose_seq;
 
-		public RepairTask(DatagramPacket p, String whose){
+		public RepairTask(DatagramPacket p, String whose_seq) {
 			this.p = p;
-			this.whose = whose;
+			this.whose_seq = whose_seq;
 		}
 
 		@Override
@@ -92,6 +92,7 @@ public class RequestRepairPool
 			startedFlag = true;
 			long expire;   // in milliseconds
 			try {
+				String whose = whose_seq.split("-")[0];
 				StateTable.State s = socket.states.get(whose);
 				if (s != null) expire = (long) ((D1 + Math.random() * D2) * s.dist());
 				else expire = 1000;
@@ -104,6 +105,9 @@ public class RequestRepairPool
 			}
 			catch (InterruptedException ignored) {
 			}
+			// Record repairing time
+			SimpleEntry<byte[], LocalTime> pair = socket.cache.get(whose_seq);
+			if (pair != null) pair.setValue(LocalTime.now());
 		}
 	}
 
@@ -124,25 +128,32 @@ public class RequestRepairPool
 	}
 
 	/**
-	 * Schedule a repair timer.
+	 * Schedule a repair timer if data payload is found in cache.
+	 * Ignore requests for D within 3 * d_S,B time after sending repair or just receiving payload,
+	 * where S is the original source of data D, and B is this node itself.
 	 */
 	protected void repair(String whose_seq)
 	{
+		String whose = whose_seq.split("-")[0];
+		StateTable.State s = socket.states.get(whose);
+		SimpleEntry<byte[], LocalTime> pair = socket.cache.get(whose_seq);
+		if (pair == null) return;
+		else if (s != null &&
+				ChronoUnit.MILLIS.between(pair.getValue(), LocalTime.now()) < 3 * s.dist()) return;
+
 		// Initialize D1, D2 with group size G
 		if (RepairTask.firstRepair) {
 			RepairTask.firstRepair = false;
 			D1 = Math.log(socket.states.getViewingPage().size());
 			D2 = D1;
 		}
-
-		String whose = whose_seq.split("-")[0];
 		Message repair = new Message(socket.sequencer, socket.getFrom(), Type.REPAIR,
 				ReliableMulticastSocket.gson.toJson(new Message.RepairBody(
-						whose_seq, socket.cache.get(whose_seq).getKey())).getBytes());
+						whose_seq, pair.getKey())).getBytes());
 		byte[] out = ReliableMulticastSocket.gson.toJson(repair).getBytes();
 		DatagramPacket p = new DatagramPacket(out, out.length, socket.getGroup(), socket.getLocalPort());
 
-		RepairTask task = new RepairTask(p, whose);
+		RepairTask task = new RepairTask(p, whose_seq);
 		Future<?> f = pool.submit(task);
 		repairs.put(whose_seq, new SimpleEntry<>(task, f));
 		ReliableMulticastSocket.logger.info("Repair timer <"+whose_seq+"> is up.");
@@ -150,13 +161,13 @@ public class RequestRepairPool
 
 	/**
 	 * Postpone a request timer if it is present.
+	 * Do not postpone for requests that belong to the same iteration of loss recovery,
+	 * where we set this ignore-backoff time to halfway task expiration time.
 	 */
 	protected void postponeRequest(String whose_seq)
 	{
 		RequestTask task = requests.get(whose_seq).getKey();
 		Future<?> f = requests.get(whose_seq).getValue();
-		// Do not postpone for requests that belong to the same iteration of loss recovery,
-		// where we set this ignore-backoff time to halfway task expiration time.
 		if (task != null && f != null && task.startedFlag &&
 				ChronoUnit.MILLIS.between(task.start, LocalTime.now()) > task.expire / 2) {
 			f.cancel(true);   // with done set false

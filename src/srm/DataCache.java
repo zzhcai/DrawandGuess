@@ -11,7 +11,8 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  * A cache of recent DATA/REPAIR payload to feed REPAIR, from each data source.
- * Keeps arrival time, with a periodic removal of those considered deprecated.
+ * Keeps the receiving or last repairing time,
+ * with a periodic removal of those considered deprecated.
  * Also contains a queue of unconsumed datagram payload for
  * the method ReliableMulticastSocket::receive to fetch from.
  */
@@ -32,7 +33,7 @@ public class DataCache extends ConcurrentHashMap<String, SimpleEntry<byte[], Loc
 			public void run() {
 				ReliableMulticastSocket.logger.info("Removing deprecated from cache.");
 				forEach((k, v) -> {
-					if (ChronoUnit.MINUTES.between(v.getValue(), LocalTime.now()) > ttl) {
+					if (ChronoUnit.MINUTES.between(v.getValue(), LocalTime.now()) > getTtl()) {
 						remove(k);
 					}
 				});
@@ -59,6 +60,10 @@ public class DataCache extends ConcurrentHashMap<String, SimpleEntry<byte[], Loc
 	protected byte[] consume() throws InterruptedException {
 		ReliableMulticastSocket.logger.info("Consuming from cache.");
 		return unconsumed.take();
+	}
+
+	protected long getTtl() {
+		return ttl;
 	}
 
 	protected Timer getUpdater() {
