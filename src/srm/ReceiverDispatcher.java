@@ -109,7 +109,7 @@ public class ReceiverDispatcher extends Thread
 				Message.SessionBody body = ReliableMulticastSocket.gson.fromJson(
 						new String(msg.getBody()), Message.SessionBody.class);
 				if (body != null && body.t != null && body.view != null) {
-					dist = ChronoUnit.SECONDS.between(LocalTime.parse(body.t), LocalTime.now());
+					dist = ChronoUnit.MILLIS.between(LocalTime.parse(body.t), LocalTime.now());
 					view = body.view;
 				}
 				else return;

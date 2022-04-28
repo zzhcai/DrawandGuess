@@ -14,7 +14,7 @@ public class StateTable extends ConcurrentHashMap<String, StateTable.State>
 	/**
 	 * @param seq the highest sequence number
 	 * @param t when seq was incremented
-	 * @param dist estimated one-way distance, in seconds;
+	 * @param dist estimated one-way distance, in milliseconds;
 	 *  		   null if distance is unknown, in particular for self state.
 	 *  		   Note that this estimate does not assume synchronized clocks,
 	 * 			   while it does assume that paths are roughly symmetric.
@@ -46,7 +46,7 @@ public class StateTable extends ConcurrentHashMap<String, StateTable.State>
 	 * Thread-safe, update the state of one active source.
 	 *
 	 * @param seq update if either absent or greater
-	 * @param dist new one-way distance, in seconds; won't update if null
+	 * @param dist new one-way distance, in milliseconds; won't update if null
 	 * @return old seq associated with from; null if absent
 	 */
 	public Long update(String from, long seq, Long dist)

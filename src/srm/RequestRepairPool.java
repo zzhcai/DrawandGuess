@@ -2,6 +2,8 @@ package srm;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +12,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
- * A container of request/repair timers.
+ * A container of request/repair back-off timers.
  */
 public class RequestRepairPool
 {
@@ -30,13 +32,14 @@ public class RequestRepairPool
 	private double C1 = 2;
 	private double C2 = 2;
 	private double D1, D2;
-	private boolean firstRepair = true;
 
 	private class RequestTask implements Runnable
 	{
 		/** Turned on before stopping the thread via interrupt */
 		boolean doneFlag = false;
 		boolean startedFlag = false;
+		LocalTime start;
+		long expire;   // in milliseconds
 		long i = 0;
 		final DatagramPacket p;
 		final String whose;
@@ -49,16 +52,15 @@ public class RequestRepairPool
 		@Override
 		public void run()
 		{
+			start = LocalTime.now();
 			startedFlag = true;
-			long delay;
-			StateTable.State s;
 			while (true) {
 				try {
-					s = socket.states.get(whose);
-					if (s != null) delay = (long) (Math.pow(2, i++) * (C1 + Math.random() * C2)) * s.dist();
-					else delay = 1;
+					StateTable.State s = socket.states.get(whose);
+					if (s != null) expire = (long) (Math.pow(2, i++) * (C1 + Math.random() * C2) * s.dist());
+					else expire = 1000;
 					//noinspection BusyWait
-					Thread.sleep(delay);
+					Thread.sleep(expire);
 					socket._send(p);
 					ReliableMulticastSocket.logger.info("Multicasting REQUEST.");
 				}
@@ -74,6 +76,7 @@ public class RequestRepairPool
 
 	private class RepairTask implements Runnable
 	{
+		static boolean firstRepair = true;
 		boolean startedFlag = false;
 		final DatagramPacket p;
 		final String whose;
@@ -87,12 +90,12 @@ public class RequestRepairPool
 		public void run()
 		{
 			startedFlag = true;
-			long delay;
+			long expire;   // in milliseconds
 			try {
 				StateTable.State s = socket.states.get(whose);
-				if (s != null) delay = (long) (D1 + Math.random() * D2) * s.dist();
-				else delay = 1;
-				Thread.sleep(delay);
+				if (s != null) expire = (long) ((D1 + Math.random() * D2) * s.dist());
+				else expire = 1000;
+				Thread.sleep(expire);
 				socket._send(p);
 				ReliableMulticastSocket.logger.info("Multicasting REPAIR.");
 			}
@@ -126,8 +129,8 @@ public class RequestRepairPool
 	protected void repair(String whose_seq)
 	{
 		// Initialize D1, D2 with group size G
-		if (firstRepair) {
-			firstRepair = false;
+		if (RepairTask.firstRepair) {
+			RepairTask.firstRepair = false;
 			D1 = Math.log(socket.states.getViewingPage().size());
 			D2 = D1;
 		}
@@ -152,8 +155,10 @@ public class RequestRepairPool
 	{
 		RequestTask task = requests.get(whose_seq).getKey();
 		Future<?> f = requests.get(whose_seq).getValue();
-		if (task != null && f != null) {
-			while (!task.startedFlag) Thread.onSpinWait();
+		// Do not postpone for requests that belong to the same iteration of loss recovery,
+		// where we set this ignore-backoff time to halfway task expiration time.
+		if (task != null && f != null && task.startedFlag &&
+				ChronoUnit.MILLIS.between(task.start, LocalTime.now()) > task.expire / 2) {
 			f.cancel(true);   // with done set false
 			ReliableMulticastSocket.logger.info("Request timer <"+whose_seq+"> is postponed.");
 		}
