@@ -115,7 +115,6 @@ public class ReceiverDispatcher extends Thread
 				else return;
 			}
 			catch (JsonSyntaxException e) { return; }
-
 			for (var v : view.entrySet())
 			{
 				String from = v.getKey();
@@ -125,7 +124,7 @@ public class ReceiverDispatcher extends Thread
 						Long _dist = null;   // t12
 						if (from.equals(socket.getFrom())) _dist = v.getValue()[1];
 						if (_dist != null) _dist = (_dist + dist) / 2;
-						Long oldSeq = socket.states.update(msg.getFrom(), seq, _dist);
+						Long oldSeq = socket.states.update(from, seq, _dist);
 						if (oldSeq != null) {
 							for (long i = oldSeq + 1; i <= seq; i++) {
 								socket.pool.request(v.getKey()+"-"+i);

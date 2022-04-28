@@ -52,12 +52,14 @@ public class RequestRepairPool
 		@Override
 		public void run()
 		{
-			start = LocalTime.now();
 			startedFlag = true;
 			while (true) {
+				start = LocalTime.now();
 				try {
 					StateTable.State s = socket.states.get(whose);
-					if (s != null) expire = (long) (Math.pow(2, i++) * (C1 + Math.random() * C2) * s.dist());
+					if (s != null && s.dist() != null) {
+						expire = (long) (Math.pow(2, i++) * (C1 + Math.random() * C2) * s.dist());
+					}
 					else expire = 1000;
 					//noinspection BusyWait
 					Thread.sleep(expire);
@@ -94,7 +96,7 @@ public class RequestRepairPool
 			try {
 				String whose = whose_seq.split("-")[0];
 				StateTable.State s = socket.states.get(whose);
-				if (s != null) expire = (long) ((D1 + Math.random() * D2) * s.dist());
+				if (s != null && s.dist() != null) expire = (long) ((D1 + Math.random() * D2) * s.dist());
 				else expire = 1000;
 				Thread.sleep(expire);
 				socket._send(p);
@@ -138,7 +140,7 @@ public class RequestRepairPool
 		StateTable.State s = socket.states.get(whose);
 		SimpleEntry<byte[], LocalTime> pair = socket.cache.get(whose_seq);
 		if (pair == null) return;
-		else if (s != null &&
+		else if (s != null && s.dist() != null &&
 				ChronoUnit.MILLIS.between(pair.getValue(), LocalTime.now()) < 3 * s.dist()) return;
 
 		// Initialize D1, D2 with group size G
@@ -166,6 +168,7 @@ public class RequestRepairPool
 	 */
 	protected void postponeRequest(String whose_seq)
 	{
+		if (requests.get(whose_seq) == null) return;
 		RequestTask task = requests.get(whose_seq).getKey();
 		Future<?> f = requests.get(whose_seq).getValue();
 		if (task != null && f != null && task.startedFlag &&
@@ -180,6 +183,7 @@ public class RequestRepairPool
 	 */
 	protected void cancelRequest(String whose_seq)
 	{
+		if (requests.get(whose_seq) == null) return;
 		RequestTask task = requests.get(whose_seq).getKey();
 		Future<?> f = requests.get(whose_seq).getValue();
 		if (task != null && f != null) {
@@ -196,6 +200,7 @@ public class RequestRepairPool
 	 */
 	protected void cancelRepair(String whose_seq)
 	{
+		if (repairs.get(whose_seq) ==  null) return;
 		RepairTask task = repairs.get(whose_seq).getKey();
 		Future<?> f = repairs.get(whose_seq).getValue();
 		if (task != null && f != null) {
