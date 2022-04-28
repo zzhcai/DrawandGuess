@@ -7,7 +7,6 @@ import java.net.DatagramPacket;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 
 /**
@@ -87,14 +86,14 @@ public class ReceiverDispatcher extends Thread
 		// 4. Put cache if DATA payload was never received
 		case DATA -> {
 			Long oldSeq = socket.states.update(msg.getFrom(), msg.getSeq(), null);
-			String whose_seq = msg.getFrom()+'-'+msg.getSeq();
+			String whose_seq = msg.getFrom()+"-"+msg.getSeq();
 			if (oldSeq != null) {
-				if (socket.pool.requestTasks.containsKey(whose_seq)) {
+				if (socket.pool.requests.containsKey(whose_seq)) {
 					socket.pool.cancelRequest(whose_seq);
 				}
 				else if (msg.getSeq() <= oldSeq) return;
 				for (long i = oldSeq + 1; i < msg.getSeq(); i++) {
-					socket.pool.request(msg.getFrom()+'-'+i);
+					socket.pool.request(msg.getFrom()+"-"+i);
 				}
 			}
 			socket.cache.put(whose_seq, msg.getBody());
@@ -129,7 +128,7 @@ public class ReceiverDispatcher extends Thread
 						Long oldSeq = socket.states.update(msg.getFrom(), seq, _dist);
 						if (oldSeq != null) {
 							for (long i = oldSeq + 1; i <= seq; i++) {
-								socket.pool.request(v.getKey()+'-'+i);
+								socket.pool.request(v.getKey()+"-"+i);
 							}
 						}
 					}
@@ -147,14 +146,12 @@ public class ReceiverDispatcher extends Thread
 		// 3. Otherwise, if DATA payload found in cache, submit REPAIR via pool
 		case REQUEST -> {
 			String whose_seq = new String(msg.getBody());
-			if (!socket.pool.repairTasks.containsKey(whose_seq)) {
-				if (!socket.pool.requestTasks.containsKey(whose_seq)) {
+			if (!socket.pool.repairs.containsKey(whose_seq))
+			{
+				if (!socket.pool.requests.containsKey(whose_seq)) {
 					socket.pool.repair(whose_seq);
-				} else {
-                    RequestRepairPool.requestTask task = socket.pool.requestTasks.get(whose_seq);
-				    task.setDoneFlag(false);
-					socket.pool.cancelRequest(whose_seq);
 				}
+				else socket.pool.postponeRequest(whose_seq);
 			}
 		}
 
@@ -173,10 +170,8 @@ public class ReceiverDispatcher extends Thread
 			}
 			catch (JsonSyntaxException e) { return; }
 
-			if (socket.pool.requestTasks.containsKey(whose_seq)) {
+			if (socket.pool.requests.containsKey(whose_seq)) {
 				socket.cache.put(whose_seq, payload);
-                RequestRepairPool.requestTask task = socket.pool.requestTasks.get(whose_seq);
-                task.setDoneFlag(true);
 			}
 			socket.pool.cancelRequest(whose_seq);
 			socket.pool.cancelRepair(whose_seq);
