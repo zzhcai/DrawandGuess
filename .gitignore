@@ -15,10 +15,12 @@
 .sts4-cache
 
 # IntelliJ IDEA #
-.idea
-*.iws
+out/
+.idea/
+.idea_modules/
 *.iml
 *.ipr
+*.iws
 
 # MAC OS #
 **/.DS_Store
