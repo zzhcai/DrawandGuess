@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 
 public class LobbyPane extends JPanel {
     private JScrollPane sp;
@@ -13,10 +14,17 @@ public class LobbyPane extends JPanel {
     private JButton joinRoom;
     private JTextField searchBar;
     private JButton searchButton;
+    private Player self;
+    private LobbyReceiveThread thread;
 
-    public LobbyPane(Room[] rooms) {
+    public LobbyPane(Room[] rooms, Player player) throws IOException {
         super();
         this.setLayout(null);
+
+        thread = new LobbyReceiveThread();
+        thread.start();
+
+        self = player;
         for (Room room: rooms) {
             dlm.addElement(room);
         }
@@ -186,6 +194,33 @@ public class LobbyPane extends JPanel {
             }
         });
 
+        JButton createButton = new JButton("Create");
+        createButton.setBounds(300, 150, 100, 30);
+        createButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e);
+                JButton source = (JButton) e.getSource();
+                source.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                JButton source = (JButton) e.getSource();
+                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+        });
+
+        createButton.addActionListener(e -> {
+            try {
+                self.setRoom(new Room(nameField.getText(), Integer.parseInt(numField.getText())));
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            WhiteBoardGUI.enterRoom(self.room);
+        } );
+
 
         this.add(createRoomPane);
         createRoomPane.setBackground(Color.PINK);
@@ -193,5 +228,6 @@ public class LobbyPane extends JPanel {
         createRoomPane.add(nameField);
         createRoomPane.add(numLabel);
         createRoomPane.add(numField);
+        createRoomPane.add(createButton);
     }
 }

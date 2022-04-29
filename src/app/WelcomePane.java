@@ -4,14 +4,17 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 
 public class WelcomePane extends JPanel {
     private JTextField userName;
     private JButton submitButton;
+    private Player self;
 
-    public WelcomePane() {
+    public WelcomePane(Player player) {
         super();
         this.setLayout(null);
+        self = player;
 
         userName = new JTextField();
         userName.setBounds(400, 600, 300, 50);
@@ -38,6 +41,12 @@ public class WelcomePane extends JPanel {
             int result = JOptionPane.showConfirmDialog(null, "Your name: " + userName.getText(), "Title", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
             if (result == 0) {
                 System.out.println("Name " + userName.getText());
+                self.setName(userName.getText());
+                try {
+                    WhiteBoardGUI.enterLobby();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             } else {
                 System.out.println("Not submit");
             }

@@ -11,14 +11,15 @@ public class WaitingRoomPane extends JPanel {
     private final DefaultListModel<Player> dlm = new DefaultListModel<>();
     private final JList<Player> playerList = new JList<>(dlm);
     private JScrollPane sp = new JScrollPane(playerList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-    private static final Room room = new Room();
+    private static Room room;
     private static final DefaultListModel<String> dlmS = new DefaultListModel<>();
     private final JList<String> vocabList = new JList<>(dlmS);
     private JScrollPane sp2 = new JScrollPane(vocabList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-    public WaitingRoomPane() {
+    public WaitingRoomPane(Room r) {
         super();
         this.setLayout(null);
+        room = r;
 
         dlm.addElement(new Player("A"));
         dlm.addElement(new Player("B"));
