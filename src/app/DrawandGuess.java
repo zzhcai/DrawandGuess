@@ -1,16 +1,25 @@
 package app;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import srm.ReliableMulticastSocket;
+
+import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.net.InetSocketAddress;
 
 public class DrawandGuess {
-    public final InetAddress LOBBYADDRESS = InetAddress.getByName("www.google.com");
-    private Player self;
+    private static final int PORT = 9000;
+    public final InetSocketAddress LOBBYADDRESS = new InetSocketAddress("239.255.255.255", PORT);
+    private static Player self;
+    protected static Gson gson = new GsonBuilder().serializeNulls().create();
 
-    public DrawandGuess() throws UnknownHostException {
+
+    public DrawandGuess() {
     }
 
-    public static void main(String[] args) {
-        WhiteBoardGUI.setUp();
+    public static void main(String[] args) throws IOException {
+        self = new Player();
+        WhiteBoardGUI.setUp(self);
     }
 }
