@@ -12,9 +12,10 @@ public class WhiteBoardGUI {
         frame.setSize(1200, 800);
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        frame.add(new WelcomePane());
+        frame.add(new WelcomePane());
+//        frame.add(new LobbyPane(new Room[0]));
 //        frame.add(lobbyScreen());
-        frame.add(new WaitingRoomPane());
+//        frame.add(new WaitingRoomPane());
 //        frame.add(new GuessPane());
 //        frame.add(new DrawPane());
         frame.setVisible(true);
@@ -33,5 +34,11 @@ public class WhiteBoardGUI {
         lobby = new LobbyPane(rooms);
 
         return lobby;
+    }
+
+    public static void redirectTo(JPanel oldPane, JPanel nextPane) {
+        frame.remove(oldPane);
+        frame.add(nextPane);
+        frame.validate();
     }
 }

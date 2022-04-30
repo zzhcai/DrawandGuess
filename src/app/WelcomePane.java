@@ -38,6 +38,7 @@ public class WelcomePane extends JPanel {
             int result = JOptionPane.showConfirmDialog(null, "Your name: " + userName.getText(), "Title", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
             if (result == 0) {
                 System.out.println("Name " + userName.getText());
+                WhiteBoardGUI.redirectTo(this, new LobbyPane(new Room[0]));
             } else {
                 System.out.println("Not submit");
             }
