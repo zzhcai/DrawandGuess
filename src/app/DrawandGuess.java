@@ -2,16 +2,16 @@ package app;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import srm.ReliableMulticastSocket;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 public class DrawandGuess {
-    private static final int PORT = 9000;
-    public static final InetSocketAddress LOBBYADDRESS = new InetSocketAddress("239.255.255.255", PORT);
+    public static final int LOBBY_PORT = 9000;
+    public static final String LOBBY_ADDRESS = "239.255.255.255";
+    public static final InetSocketAddress LOBBY_SOCKET_ADDRESS = new InetSocketAddress(LOBBY_ADDRESS, LOBBY_PORT);
     public static Player self;
+    public static Room currentRoom;
     protected static Gson gson = new GsonBuilder().serializeNulls().create();
 
 

@@ -1,10 +1,12 @@
-package app;
+package app.UI_util;
+
+import app.Room;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 
-public class RoomRender extends JPanel implements ListCellRenderer<Room> {
+public class RoomRenderer extends JPanel implements ListCellRenderer<Room> {
 
     @Override
     public Component getListCellRendererComponent(JList<? extends Room> list, Room value, int index, boolean isSelected, boolean cellHasFocus) {

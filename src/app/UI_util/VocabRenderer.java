@@ -1,10 +1,10 @@
-package app;
+package app.UI_util;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 
-public class VocabRender extends JPanel implements ListCellRenderer<String>{
+public class VocabRenderer extends JPanel implements ListCellRenderer<String>{
     @Override
     public Component getListCellRendererComponent(JList<? extends String> list, String value, int index, boolean isSelected, boolean cellHasFocus) {
         this.removeAll();
