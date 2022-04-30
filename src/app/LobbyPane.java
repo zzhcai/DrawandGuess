@@ -1,10 +1,12 @@
 package app;
 
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.text.NumberFormat;
 
 public class LobbyPane extends JPanel {
     private JScrollPane sp;
@@ -14,17 +16,19 @@ public class LobbyPane extends JPanel {
     private JButton joinRoom;
     private JTextField searchBar;
     private JButton searchButton;
-    private Player self;
     private LobbyReceiveThread thread;
 
-    public LobbyPane(Room[] rooms, Player player) throws IOException {
+    public LobbyPane(Room[] rooms) {
         super();
         this.setLayout(null);
 
-        thread = new LobbyReceiveThread();
+        try {
+            thread = new LobbyReceiveThread();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         thread.start();
 
-        self = player;
         for (Room room: rooms) {
             dlm.addElement(room);
         }
@@ -176,7 +180,13 @@ public class LobbyPane extends JPanel {
         JLabel numLabel = new JLabel("Max player num: ");
         numLabel.setBounds(100, 110, 150, 30);
 
-        JTextField numField = new JTextField();
+        // Restricts max player number to a number from 0 to 10
+        NumberFormatter formatter = new NumberFormatter(NumberFormat.getInstance());
+        formatter.setValueClass(Integer.class);
+        formatter.setMinimum(1);
+        formatter.setMaximum(10);
+//        formatter.setAllowsInvalid(false);
+        JTextField numField = new JFormattedTextField(formatter);
         numField.setBounds(250, 110, 200, 30);
         numField.addMouseListener(new MouseAdapter() {
             @Override
@@ -214,11 +224,16 @@ public class LobbyPane extends JPanel {
 
         createButton.addActionListener(e -> {
             try {
-                self.setRoom(new Room(nameField.getText(), Integer.parseInt(numField.getText())));
+                DrawandGuess.self.setRoom(new Room(nameField.getText(), Integer.parseInt(numField.getText())));
+                WhiteBoardGUI.redirectTo(this, new WaitingRoomPane(DrawandGuess.self.room));
+            } catch (NumberFormatException nfe) {
+                JOptionPane.showMessageDialog(this,
+                        "Please enter number 1 to 10 for max player",
+                        "Wrong max player number",
+                        JOptionPane.ERROR_MESSAGE);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
-            WhiteBoardGUI.enterRoom(self.room);
         } );
 
 

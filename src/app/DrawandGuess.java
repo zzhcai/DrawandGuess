@@ -11,7 +11,7 @@ import java.net.InetSocketAddress;
 public class DrawandGuess {
     private static final int PORT = 9000;
     public final InetSocketAddress LOBBYADDRESS = new InetSocketAddress("239.255.255.255", PORT);
-    private static Player self;
+    public static Player self;
     protected static Gson gson = new GsonBuilder().serializeNulls().create();
 
 
@@ -20,6 +20,6 @@ public class DrawandGuess {
 
     public static void main(String[] args) throws IOException {
         self = new Player();
-        WhiteBoardGUI.setUp(self);
+        WhiteBoardGUI.setUp();
     }
 }
