@@ -1,5 +1,7 @@
 package app;
 
+import app.UI_util.MyMouseAdapter;
+
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
@@ -41,41 +43,13 @@ public class LobbyPane extends JPanel {
 
         sp.setBounds(300, 100, 600, 600);
 
-        roomList.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JList<Room> source = (JList<Room>) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JList<Room> source = (JList<Room>) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
+        roomList.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
 
         createRoom = new JButton("Create Room");
         createRoom.setBounds(350, 720, 150, 30);
         createRoom.addActionListener(e -> createRoom());
 
-        createRoom.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JButton source = (JButton) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JButton source = (JButton) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
+        createRoom.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
 
 
         joinRoom = new JButton("Join Room");
@@ -84,57 +58,15 @@ public class LobbyPane extends JPanel {
             System.out.println(roomList.getSelectedValue());
         });
         joinRoom.setBounds(700, 720, 150, 30);
-        joinRoom.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JButton source = (JButton) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JButton source = (JButton) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
+        joinRoom.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
 
         searchBar = new JTextField();
         searchBar.setBounds(350, 50, 300, 40);
-        searchBar.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JTextField source = (JTextField) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JTextField source = (JTextField) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
+        searchBar.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
         searchButton = new JButton("Search");
         searchButton.setBounds(655, 55, 100, 30);
-        searchButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JButton source = (JButton) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JButton source = (JButton) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
+        searchButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
 
         this.add(sp);
         this.add(createRoom);
@@ -161,21 +93,7 @@ public class LobbyPane extends JPanel {
 
         JTextField nameField = new JTextField();
         nameField.setBounds(250, 50, 200, 30);
-        nameField.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JTextField source = (JTextField) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JTextField source = (JTextField) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
+        nameField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
         JLabel numLabel = new JLabel("Max player num: ");
         numLabel.setBounds(100, 110, 150, 30);
@@ -188,39 +106,11 @@ public class LobbyPane extends JPanel {
 //        formatter.setAllowsInvalid(false);
         JTextField numField = new JFormattedTextField(formatter);
         numField.setBounds(250, 110, 200, 30);
-        numField.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JTextField source = (JTextField) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JTextField source = (JTextField) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
+        numField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
         JButton createButton = new JButton("Create");
         createButton.setBounds(300, 150, 100, 30);
-        createButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JButton source = (JButton) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JButton source = (JButton) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
+        createButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
 
         createButton.addActionListener(e -> {
             try {
