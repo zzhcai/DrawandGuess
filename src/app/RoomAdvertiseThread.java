@@ -12,7 +12,7 @@ public class RoomAdvertiseThread extends Thread {
     private ReliableMulticastSocket socket;
     public RoomAdvertiseThread() throws IOException {
         socket = new ReliableMulticastSocket(9000);
-//        socket.joinGroup(new InetSocketAddress("239.255.255.255", 9000), null);
+        socket.joinGroup(new InetSocketAddress("239.255.255.255", 9000), null);
     }
 
     // multicast room info to lobby every second

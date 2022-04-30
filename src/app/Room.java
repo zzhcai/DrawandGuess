@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Room implements Comparable<Room>{
-    public int id;
+    public String hostId;
     public InetSocketAddress address;
     public int port;
     public String roomName;
@@ -54,12 +54,12 @@ public class Room implements Comparable<Room>{
 
     @Override
     public int compareTo(Room o) {
-        return o.id - this.id;
+        return o.hostId.compareTo(this.hostId);
     }
 
     @Override
     public String toString() {
-        return "{roomid=" + id +
+        return "{roomid=" + hostId +
                 ", name=" + roomName +
                 ", numPlayer=" + numPlayer +
                 ", maxPlayer=" + maxPlayer + "}";

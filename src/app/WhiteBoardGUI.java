@@ -31,7 +31,7 @@ public class WhiteBoardGUI {
         rooms[5] = new Room("Example 6", 6, 10);
         rooms[6] = new Room("Example 7", 7, 10);
         rooms[7] = new Room("Example 8", 9, 10);
-        lobby = new LobbyPane(rooms);
+//        lobby = new LobbyPane(rooms);
 
         return lobby;
     }

@@ -19,16 +19,19 @@ public class WelcomePane extends JPanel {
         userName.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
         submitButton = new JButton("Submit");
-        submitButton.setBounds(720, 600, 60, 50);
+        submitButton.setBounds(720, 600, 100, 50);
         submitButton.addActionListener(e -> {
-            String name = userName.getText() + "#" + new Random().nextInt(10000);
-            int result = JOptionPane.showConfirmDialog(null, "Your name: " + name, "Title", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
-            if (result == 0) {
-                System.out.println("Name " + userName.getText());
-                DrawandGuess.self.setName(name);
-                WhiteBoardGUI.redirectTo(this, new LobbyPane(new Room[0]));
-            } else {
-                System.out.println("Not submit");
+            if (userName.getText().length() > 0) {
+                // Blizzard style naming
+                String name = userName.getText() + "#" + new Random().nextInt(1000, 10000);
+                int result = JOptionPane.showConfirmDialog(null, "Your name: " + name, "Title", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+                if (result == 0) {
+                    System.out.println("Name " + userName.getText());
+                    DrawandGuess.self.setName(name);
+                    WhiteBoardGUI.redirectTo(this, new LobbyPane());
+                } else {
+                    System.out.println("Not submit");
+                }
             }
         });
 
