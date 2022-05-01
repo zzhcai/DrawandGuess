@@ -13,7 +13,7 @@ public class Room{
     public int maxPlayer;
     public int timeLimit;
     public ArrayList<String> dictionary = new ArrayList<>();
-    public final ArrayList<Player> playerList = new ArrayList<>();
+    public ArrayList<Player> playerList = new ArrayList<>();
     public int numRounds;
 
     public Room() {

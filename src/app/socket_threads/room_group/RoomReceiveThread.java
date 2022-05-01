@@ -22,10 +22,20 @@ public class RoomReceiveThread extends Thread {
             Player player = DrawandGuess.gson.fromJson(new String(p.getData(), 0, p.getLength()), Player.class);
             if (player.name == null) {
                 Room room = DrawandGuess.gson.fromJson(new String(p.getData(), 0, p.getLength()), Room.class);
+                synchronized (DrawandGuess.currentRoom) {
+                    DrawandGuess.currentRoom.roomName = room.roomName;
+                    DrawandGuess.currentRoom.dictionary = room.dictionary;
+                    DrawandGuess.currentRoom.host = room.host;
+                    DrawandGuess.currentRoom.numRounds = room.numRounds;
+                    DrawandGuess.currentRoom.playerList = room.playerList;
+                    DrawandGuess.currentRoom.timeLimit = room.timeLimit;
+                    DrawandGuess.currentRoom.notifyAll();
+                }
             } else {
                 synchronized (DrawandGuess.currentRoom) {
                     DrawandGuess.currentRoom.playerList.remove(player);
                     DrawandGuess.currentRoom.playerList.add(player);
+                    DrawandGuess.currentRoom.notifyAll();
                 }
             }
         }
