@@ -1,6 +1,7 @@
 package app.socket_threads.lobby_group;
 
 import app.DrawandGuess;
+import app.MySocketFactory;
 import app.Room;
 import srm.ReliableMulticastSocket;
 
@@ -23,17 +24,7 @@ public class LobbyReceiveThread extends Thread {
 
     public LobbyReceiveThread(ConcurrentMap<Room, Instant> roomsLastUpdated) {
         this.roomsLastUpdated = roomsLastUpdated;
-        int port = 9000;
-        while (true) {
-            try {
-                socket = new ReliableMulticastSocket(port);
-                socket.joinGroup(DrawandGuess.LOBBY_SOCKET_ADDRESS, null);
-                break;
-            } catch (IOException e) {
-                if (socket == null) port++;
-                else break;// Joining the same group, nothing to worry about
-            }
-        }
+        socket = MySocketFactory.newInstance(DrawandGuess.LOBBY_SOCKET_ADDRESS);
     }
 
     public void run() {
@@ -49,6 +40,11 @@ public class LobbyReceiveThread extends Thread {
             }
         }
         System.out.println("Lobby receive thread closed");
+        try {
+            socket.leaveGroup(DrawandGuess.LOBBY_SOCKET_ADDRESS, null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         socket.close();
     }
 }

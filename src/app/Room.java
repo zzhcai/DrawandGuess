@@ -1,12 +1,11 @@
 package app;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Random;
 
 public class Room{
-    // The unique identifier of the room is its first host's ID. This ID won't change even if the host leaves.
+    // The unique identifier of the room is its current host's ID.
     public String hostId;
     public InetSocketAddress address;
     public int port;
@@ -21,7 +20,6 @@ public class Room{
         this.port = new Random().nextInt(10000) + 9000;
         this.address = new InetSocketAddress(randomIP(), port);
         this.hostId = host.name;
-        playerList.add(host);
         this.roomName = roomName;
         this.maxPlayer = maxPlayer;
     }

@@ -7,20 +7,23 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.time.Instant;
 import java.util.Objects;
 
 public class Player {
 
-    public String name;
+    public final String name;
     private String[] words;
     private String[] guesses;
     private Graphics[] drawings;
     public boolean isHost = false;
     public boolean ready = false;
 
-    public Player(String name) {
+    public Long lastActive;
 
+    public Player(String name) {
         this.name = name;
+        lastActive = Instant.now().toEpochMilli();
     }
     @Override
     public boolean equals(Object o) {
