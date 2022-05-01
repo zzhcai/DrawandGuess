@@ -1,11 +1,17 @@
-package app;
+package app.socket_threads.lobby_group;
 
+import app.DrawandGuess;
+import app.Room;
 import srm.ReliableMulticastSocket;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 
+/**
+ * A thread that constantly advertises the room's existence to the lobby.
+ * This thread should only be active for the host of the room.
+ */
 public class RoomAdvertiseThread extends Thread {
     private final Room room;
     private ReliableMulticastSocket socket;
@@ -21,7 +27,7 @@ public class RoomAdvertiseThread extends Thread {
                 break;
             } catch (IOException e) {
                 if (socket == null) port++;
-                else e.printStackTrace();
+                else break;// Joining the same group, nothing to worry about
             }
         }
     }
@@ -43,5 +49,6 @@ public class RoomAdvertiseThread extends Thread {
             }
         }
         System.out.println("Room advertise thread closed");
+        socket.close();
     }
 }

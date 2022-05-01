@@ -12,13 +12,9 @@ public class DrawandGuess {
     public static final InetSocketAddress LOBBY_SOCKET_ADDRESS = new InetSocketAddress(LOBBY_ADDRESS, LOBBY_PORT);
     public static Player self;
     public static Room currentRoom;
-    protected static Gson gson = new GsonBuilder().serializeNulls().create();
+    public static Gson gson = new GsonBuilder().serializeNulls().create();
 
-
-    public DrawandGuess() {
-    }
-
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         WhiteBoardGUI.setUp();
     }
 }

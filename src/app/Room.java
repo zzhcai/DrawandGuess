@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Random;
 
 public class Room{
+    // The unique identifier of the room is its first host's ID. This ID won't change even if the host leaves.
     public String hostId;
     public InetSocketAddress address;
     public int port;
