@@ -17,27 +17,13 @@ public class Room{
     public ArrayList<Player> playerList = new ArrayList<>();
     public int numRounds;
 
-    public Room() {
-        this.port = new Random().nextInt(10000) + 9000;
-        this.address = new InetSocketAddress(randomIP(), port);
-        this.roomName = "someone's room";
-        this.numPlayer = 1;
-        this.maxPlayer = 10;
-    }
-
-    public Room(Player host, String roomName, int maxPlayer) {
+    public Room(Player host, String roomName,int maxPlayer) {
         this.port = new Random().nextInt(10000) + 9000;
         this.address = new InetSocketAddress(randomIP(), port);
         this.hostId = host.name;
         playerList.add(host);
         this.roomName = roomName;
         this.numPlayer = 1;
-        this.maxPlayer = maxPlayer;
-    }
-
-    public Room(String roomName, int numPlayer, int maxPlayer) {
-        this.roomName = roomName;
-        this.numPlayer = numPlayer;
         this.maxPlayer = maxPlayer;
     }
 

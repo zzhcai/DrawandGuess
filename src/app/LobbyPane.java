@@ -105,12 +105,11 @@ public class LobbyPane extends JPanel {
                     "Select max player number",
                     "Create room",
                     JOptionPane.QUESTION_MESSAGE, null,
-                    new Object[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, 1);
+                    new Object[]{3, 4, 5, 6, 7, 8, 9, 10}, 3);
         if (maxPlayerNum == null) return;
 
-        DrawandGuess.currentRoom = new Room(DrawandGuess.self, roomName, maxPlayerNum);
         DrawandGuess.self.isHost = true;
         thread.interrupted = true;
-        WhiteBoardGUI.redirectTo(this, new WaitingRoomPane(DrawandGuess.currentRoom));
+        WhiteBoardGUI.redirectTo(this, new WaitingRoomPane(new Room(DrawandGuess.self, roomName,  maxPlayerNum)));
     }
 }

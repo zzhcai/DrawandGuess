@@ -17,7 +17,6 @@ public class WaitingRoomPane extends JPanel {
     private final DefaultListModel<Player> dlmPlayers = new DefaultListModel<>();
     private final JList<Player> playerList = new JList<>(dlmPlayers);
     private JScrollPane spPlayers = new JScrollPane(playerList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-    private static Room room;
     private static final DefaultListModel<String> dlmWords = new DefaultListModel<>();
     private final JList<String> wordList = new JList<>(dlmWords);
     private JScrollPane spWords = new JScrollPane(wordList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -26,16 +25,12 @@ public class WaitingRoomPane extends JPanel {
     public WaitingRoomPane(Room r) {
         super();
         this.setLayout(null);
-        room = r;
+        DrawandGuess.currentRoom = r;
 
-        this.thread = new RoomAdvertiseThread(room);
+        this.thread = new RoomAdvertiseThread(r);
         thread.start();
 
-        dlmPlayers.addElement(new Player("A"));
-        dlmPlayers.addElement(new Player("B"));
-        dlmPlayers.addElement(new Player("C"));
-        dlmPlayers.addElement(new Player("D"));
-        dlmPlayers.addElement(new Player("E"));
+        for (Player player: r.playerList) dlmPlayers.addElement(player);
 
         playerList.setCellRenderer(new PlayerRenderer());
         spPlayers.getVerticalScrollBar().setUnitIncrement(10);
@@ -52,7 +47,7 @@ public class WaitingRoomPane extends JPanel {
         nameLabel.setBounds(100, 50, 150, 30);
 
         JTextField nameField = new JTextField();
-        nameField.setText(room.roomName);
+        nameField.setText(r.roomName);
         nameField.setBounds(250, 50, 200, 30);
         nameField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
@@ -60,16 +55,18 @@ public class WaitingRoomPane extends JPanel {
         numLabel.setBounds(100, 110, 150, 30);
 
         // Format numField so that only 1 to 10 players are allowed.
-        NumberFormatter formatter = new NumberFormatter(NumberFormat.getInstance());
-        formatter.setValueClass(Integer.class);
-        formatter.setMinimum(1);
-        formatter.setMaximum(10);
-        formatter.setAllowsInvalid(false);
-        JFormattedTextField numField = new JFormattedTextField(formatter);
+//        NumberFormatter formatter = new NumberFormatter(NumberFormat.getInstance());
+//        formatter.setValueClass(Integer.class);
+//        formatter.setMinimum(3);
+//        formatter.setMaximum(10);
+//        formatter.setAllowsInvalid(false);
+//        JFormattedTextField numField = new JFormattedTextField(formatter);
+        JTextField numField = new JTextField(r.maxPlayer);
+        numField.setEditable(false);
         numField.setBounds(250, 110, 200, 30);
         numField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
-        numField.setText(String.valueOf(room.maxPlayer));
+        numField.setText(String.valueOf(r.maxPlayer));
         numField.setBounds(250, 110, 200, 30);
         numField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
@@ -105,10 +102,10 @@ public class WaitingRoomPane extends JPanel {
     public static void addDictionary(File file){
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String tempString;
-            room.dictionary.clear();
+            DrawandGuess.currentRoom.dictionary.clear();
             dlmWords.clear();
             while ((tempString = reader.readLine()) != null) {
-                room.dictionary.add(tempString);
+                DrawandGuess.currentRoom.dictionary.add(tempString);
                 dlmWords.addElement(tempString);
             }
 
