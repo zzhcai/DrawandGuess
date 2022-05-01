@@ -1,9 +1,10 @@
 package app;
 
+import app.UI_util.MyMouseAdapter;
+import app.UI_util.RoomRenderer;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 
 public class LobbyPane extends JPanel {
@@ -14,21 +15,15 @@ public class LobbyPane extends JPanel {
     private JButton joinRoom;
     private JTextField searchBar;
     private JButton searchButton;
-    private Player self;
     private LobbyReceiveThread thread;
 
-    public LobbyPane(Room[] rooms, Player player) throws IOException {
+    public LobbyPane() {
         super();
         this.setLayout(null);
 
-        thread = new LobbyReceiveThread();
+        thread = new LobbyReceiveThread(dlm);
         thread.start();
-
-        self = player;
-        for (Room room: rooms) {
-            dlm.addElement(room);
-        }
-        roomList.setCellRenderer(new RoomRender());
+        roomList.setCellRenderer(new RoomRenderer());
 
         sp = new JScrollPane(roomList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
@@ -37,197 +32,57 @@ public class LobbyPane extends JPanel {
 
         sp.setBounds(300, 100, 600, 600);
 
-        roomList.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JList<Room> source = (JList<Room>) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JList<Room> source = (JList<Room>) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
+        roomList.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
 
         createRoom = new JButton("Create Room");
         createRoom.setBounds(350, 720, 150, 30);
         createRoom.addActionListener(e -> createRoom());
 
-        createRoom.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JButton source = (JButton) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JButton source = (JButton) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
+        createRoom.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
 
 
         joinRoom = new JButton("Join Room");
         joinRoom.addActionListener(e -> {
+            //TODO
             System.out.println(roomList.getSelectedIndex());
             System.out.println(roomList.getSelectedValue());
         });
         joinRoom.setBounds(700, 720, 150, 30);
-        joinRoom.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JButton source = (JButton) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JButton source = (JButton) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
+        joinRoom.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
 
         searchBar = new JTextField();
         searchBar.setBounds(350, 50, 300, 40);
-        searchBar.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JTextField source = (JTextField) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JTextField source = (JTextField) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
+        searchBar.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
         searchButton = new JButton("Search");
         searchButton.setBounds(655, 55, 100, 30);
-        searchButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JButton source = (JButton) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JButton source = (JButton) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
+        searchButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
+        //TODO search hostID and join
 
         this.add(sp);
         this.add(createRoom);
         this.add(joinRoom);
         this.add(searchBar);
         this.add(searchButton);
-
-//        createRoom();
     }
 
     private void createRoom() {
-        sp.setVisible(false);
-        createRoom.setVisible(false);
-        joinRoom.setVisible(false);
-        searchBar.setVisible(false);
-        searchButton.setVisible(false);
+        String roomName = JOptionPane.showInputDialog(this,
+                    "Please enter the room name",
+                    "Create room",
+                    JOptionPane.QUESTION_MESSAGE);
+        if (roomName == null) return;
 
-        JPanel createRoomPane = new JPanel();
-        createRoomPane.setBounds(300, 100, 600, 600);
-        createRoomPane.setLayout(null);
+        Integer maxPlayerNum = (Integer) JOptionPane.showInputDialog(this,
+                    "Select max player number",
+                    "Create room",
+                    JOptionPane.QUESTION_MESSAGE, null,
+                    new Object[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, 1);
+        if (maxPlayerNum == null) return;
 
-        JLabel nameLabel = new JLabel("Room name: ");
-        nameLabel.setBounds(100, 50, 150, 30);
-
-        JTextField nameField = new JTextField();
-        nameField.setBounds(250, 50, 200, 30);
-        nameField.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JTextField source = (JTextField) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JTextField source = (JTextField) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
-
-        JLabel numLabel = new JLabel("Max player num: ");
-        numLabel.setBounds(100, 110, 150, 30);
-
-        JTextField numField = new JTextField();
-        numField.setBounds(250, 110, 200, 30);
-        numField.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JTextField source = (JTextField) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JTextField source = (JTextField) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
-
-        JButton createButton = new JButton("Create");
-        createButton.setBounds(300, 150, 100, 30);
-        createButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JButton source = (JButton) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JButton source = (JButton) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
-
-        createButton.addActionListener(e -> {
-            try {
-                self.setRoom(new Room(nameField.getText(), Integer.parseInt(numField.getText())));
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-            WhiteBoardGUI.enterRoom(self.room);
-        } );
-
-
-        this.add(createRoomPane);
-        createRoomPane.setBackground(Color.PINK);
-        createRoomPane.add(nameLabel);
-        createRoomPane.add(nameField);
-        createRoomPane.add(numLabel);
-        createRoomPane.add(numField);
-        createRoomPane.add(createButton);
+        DrawandGuess.currentRoom = new Room(DrawandGuess.self, roomName, maxPlayerNum);
+        DrawandGuess.self.isHost = true;
+        thread.interrupted = true;
+        WhiteBoardGUI.redirectTo(this, new WaitingRoomPane(DrawandGuess.currentRoom));
     }
 }

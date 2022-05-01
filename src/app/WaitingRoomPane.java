@@ -1,42 +1,52 @@
 package app;
 
+import app.UI_util.MyMouseAdapter;
+import app.UI_util.PlayerRenderer;
+import app.UI_util.VocabRenderer;
+
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
+import java.text.NumberFormat;
 
 public class WaitingRoomPane extends JPanel {
-    private final DefaultListModel<Player> dlm = new DefaultListModel<>();
-    private final JList<Player> playerList = new JList<>(dlm);
-    private JScrollPane sp = new JScrollPane(playerList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+    private final DefaultListModel<Player> dlmPlayers = new DefaultListModel<>();
+    private final JList<Player> playerList = new JList<>(dlmPlayers);
+    private JScrollPane spPlayers = new JScrollPane(playerList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     private static Room room;
-    private static final DefaultListModel<String> dlmS = new DefaultListModel<>();
-    private final JList<String> vocabList = new JList<>(dlmS);
-    private JScrollPane sp2 = new JScrollPane(vocabList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+    private static final DefaultListModel<String> dlmWords = new DefaultListModel<>();
+    private final JList<String> wordList = new JList<>(dlmWords);
+    private JScrollPane spWords = new JScrollPane(wordList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+    public RoomAdvertiseThread thread;
 
     public WaitingRoomPane(Room r) {
         super();
         this.setLayout(null);
         room = r;
 
-        dlm.addElement(new Player("A"));
-        dlm.addElement(new Player("B"));
-        dlm.addElement(new Player("C"));
-        dlm.addElement(new Player("D"));
-        dlm.addElement(new Player("E"));
+        this.thread = new RoomAdvertiseThread(room);
+        thread.start();
 
-        playerList.setCellRenderer(new PlayerRender());
-        sp.getVerticalScrollBar().setUnitIncrement(10);
-        sp.setBounds(700, 100, 400, 600);
+        dlmPlayers.addElement(new Player("A"));
+        dlmPlayers.addElement(new Player("B"));
+        dlmPlayers.addElement(new Player("C"));
+        dlmPlayers.addElement(new Player("D"));
+        dlmPlayers.addElement(new Player("E"));
 
-        this.add(sp);
+        playerList.setCellRenderer(new PlayerRenderer());
+        spPlayers.getVerticalScrollBar().setUnitIncrement(10);
+        spPlayers.setBounds(700, 100, 400, 600);
 
-        vocabList.setCellRenderer(new VocabRender());
-        sp2.getVerticalScrollBar().setUnitIncrement(10);
-        sp2.setBounds(100, 300, 400, 400);
-        this.add(sp2);
+        this.add(spPlayers);
+
+        wordList.setCellRenderer(new VocabRenderer());
+        spWords.getVerticalScrollBar().setUnitIncrement(10);
+        spWords.setBounds(100, 300, 400, 400);
+        this.add(spWords);
 
         JLabel nameLabel = new JLabel("Room name: ");
         nameLabel.setBounds(100, 50, 150, 30);
@@ -44,43 +54,24 @@ public class WaitingRoomPane extends JPanel {
         JTextField nameField = new JTextField();
         nameField.setText(room.roomName);
         nameField.setBounds(250, 50, 200, 30);
-        nameField.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JTextField source = (JTextField) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JTextField source = (JTextField) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
+        nameField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
         JLabel numLabel = new JLabel("Max player num: ");
         numLabel.setBounds(100, 110, 150, 30);
 
-        JTextField numField = new JTextField();
+        // Format numField so that only 1 to 10 players are allowed.
+        NumberFormatter formatter = new NumberFormatter(NumberFormat.getInstance());
+        formatter.setValueClass(Integer.class);
+        formatter.setMinimum(1);
+        formatter.setMaximum(10);
+        formatter.setAllowsInvalid(false);
+        JFormattedTextField numField = new JFormattedTextField(formatter);
+        numField.setBounds(250, 110, 200, 30);
+        numField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
+
         numField.setText(String.valueOf(room.maxPlayer));
         numField.setBounds(250, 110, 200, 30);
-        numField.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JTextField source = (JTextField) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JTextField source = (JTextField) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
+        numField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
         this.add(nameLabel);
         this.add(nameField);
@@ -89,21 +80,7 @@ public class WaitingRoomPane extends JPanel {
 
         JButton fileButton = new JButton("Choose vocabulary file");
         fileButton.setBounds(150, 180, 250, 30);
-        fileButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JButton source = (JButton) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JButton source = (JButton) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
+        fileButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
 
         fileButton.addActionListener(e -> {
             JFileChooser addChooser = new JFileChooser(".");
@@ -124,15 +101,15 @@ public class WaitingRoomPane extends JPanel {
         this.add(fileButton);
 
     }
-
+//TODO change dictionary should be multicasted to all players within the room
     public static void addDictionary(File file){
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String tempString;
             room.dictionary.clear();
-            dlmS.clear();
+            dlmWords.clear();
             while ((tempString = reader.readLine()) != null) {
                 room.dictionary.add(tempString);
-                dlmS.addElement(tempString);
+                dlmWords.addElement(tempString);
             }
 
         } catch (IOException e) {

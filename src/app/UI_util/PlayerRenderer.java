@@ -1,10 +1,12 @@
-package app;
+package app.UI_util;
+
+import app.Player;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 
-public class PlayerRender extends JPanel implements ListCellRenderer<Player> {
+public class PlayerRenderer extends JPanel implements ListCellRenderer<Player> {
 
     @Override
     public Component getListCellRendererComponent(JList<? extends Player> list, Player value, int index, boolean isSelected, boolean cellHasFocus) {

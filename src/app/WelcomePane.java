@@ -1,54 +1,37 @@
 package app;
 
+import app.UI_util.MyMouseAdapter;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.IOException;
+import java.util.Random;
 
 public class WelcomePane extends JPanel {
     private JTextField userName;
     private JButton submitButton;
-    private Player self;
 
-    public WelcomePane(Player player) {
+    public WelcomePane() {
         super();
         this.setLayout(null);
-        self = player;
 
         userName = new JTextField();
         userName.setBounds(400, 600, 300, 50);
-        userName.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                JTextField source = (JTextField) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                JTextField source = (JTextField) e.getSource();
-                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
-
+        userName.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
         submitButton = new JButton("Submit");
-        submitButton.setBounds(720, 600, 60, 50);
+        submitButton.setBounds(720, 600, 100, 50);
         submitButton.addActionListener(e -> {
-            int result = JOptionPane.showConfirmDialog(null, "Your name: " + userName.getText(), "Title", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
-            if (result == 0) {
-                System.out.println("Name " + userName.getText());
-                self.setName(userName.getText());
-                try {
-                    WhiteBoardGUI.enterLobby();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+            if (userName.getText().length() > 0) {
+                // Blizzard style naming
+                String name = userName.getText() + "#" + new Random().nextInt(1000, 10000);
+                int result = JOptionPane.showConfirmDialog(null, "Your name: " + name, "Title", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+                if (result == 0) {
+                    System.out.println("Name " + userName.getText());
+                    DrawandGuess.self.setName(name);
+                    WhiteBoardGUI.redirectTo(this, new LobbyPane());
+                } else {
+                    System.out.println("Not submit");
                 }
-            } else {
-                System.out.println("Not submit");
             }
         });
 

@@ -4,40 +4,34 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Room implements Comparable<Room>{
-    public int id;
+public class Room{
+    public String hostId;
     public InetSocketAddress address;
     public int port;
     public String roomName;
     public int numPlayer;
     public int maxPlayer;
-    private Player host;
     public int timeLimit;
     public ArrayList<String> dictionary = new ArrayList<>();
     public ArrayList<Player> playerList = new ArrayList<>();
     public int numRounds;
-    public RoomAdvertiseThread thread;
 
-    public Room() throws IOException {
+    public Room() {
         this.port = new Random().nextInt(10000) + 9000;
         this.address = new InetSocketAddress(randomIP(), port);
         this.roomName = "someone's room";
         this.numPlayer = 1;
         this.maxPlayer = 10;
-        this.thread = new RoomAdvertiseThread();
-        thread.setRoom(this);
-        thread.start();
     }
 
-    public Room(String roomName, int maxPlayer) throws IOException {
+    public Room(Player host, String roomName, int maxPlayer) {
         this.port = new Random().nextInt(10000) + 9000;
         this.address = new InetSocketAddress(randomIP(), port);
+        this.hostId = host.name;
+        playerList.add(host);
         this.roomName = roomName;
         this.numPlayer = 1;
         this.maxPlayer = maxPlayer;
-        this.thread = new RoomAdvertiseThread();
-        thread.setRoom(this);
-        thread.start();
     }
 
     public Room(String roomName, int numPlayer, int maxPlayer) {
@@ -51,15 +45,14 @@ public class Room implements Comparable<Room>{
         return (r.nextInt(15)+224) + "." + r.nextInt(256) + "." + r.nextInt(256) + "." + r.nextInt(256);
     }
 
-
     @Override
-    public int compareTo(Room o) {
-        return o.id - this.id;
+    public boolean equals(Object o) {
+        return o instanceof Room && this.hostId.equals(((Room) o).hostId);
     }
 
     @Override
     public String toString() {
-        return "{roomid=" + id +
+        return "{roomid=" + hostId +
                 ", name=" + roomName +
                 ", numPlayer=" + numPlayer +
                 ", maxPlayer=" + maxPlayer + "}";
