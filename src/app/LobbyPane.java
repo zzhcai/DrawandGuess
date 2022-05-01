@@ -4,24 +4,35 @@ import app.UI_util.MyMouseAdapter;
 import app.UI_util.RoomRenderer;
 
 import javax.swing.*;
+import javax.swing.text.DefaultEditorKit;
 import java.awt.*;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class LobbyPane extends JPanel {
     private JScrollPane sp;
     private final DefaultListModel<Room> dlm = new DefaultListModel<>();
+    private final ConcurrentMap<Room, Instant> roomsLastUpdated = new ConcurrentHashMap<>();
     private JList<Room> roomList = new JList<>(dlm);
     private JButton createRoom;
     private JButton joinRoom;
     private JTextField searchBar;
     private JButton searchButton;
     private LobbyReceiveThread thread;
+    private JButton refreshButton;
 
     public LobbyPane() {
         super();
         this.setLayout(null);
 
-        thread = new LobbyReceiveThread(dlm);
+        thread = new LobbyReceiveThread(roomsLastUpdated);
         thread.start();
         roomList.setCellRenderer(new RoomRenderer());
 
@@ -59,11 +70,28 @@ public class LobbyPane extends JPanel {
         searchButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
         //TODO search hostID and join
 
+        refreshButton = new JButton("Refresh");
+        refreshButton.setBounds(780, 55, 100, 30);
+        refreshButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
+        refreshButton.addActionListener(e -> {
+            refreshButton.setEnabled(false);
+            Instant now = Instant.now();
+            dlm.removeAllElements();
+            Set<Map.Entry<Room, Instant>> entrySet = roomsLastUpdated.entrySet();
+            for (Map.Entry<Room, Instant> entry: entrySet) {
+                if (Duration.between(entry.getValue(), now).toMillis() < 1500) {
+                    dlm.addElement(entry.getKey());
+                } else roomsLastUpdated.remove(entry.getKey());
+            }
+            refreshButton.setEnabled(true);
+        });
+
         this.add(sp);
         this.add(createRoom);
         this.add(joinRoom);
         this.add(searchBar);
         this.add(searchButton);
+        this.add(refreshButton);
     }
 
     private void createRoom() {

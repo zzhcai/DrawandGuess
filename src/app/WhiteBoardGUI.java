@@ -21,21 +21,6 @@ public class WhiteBoardGUI {
         frame.setVisible(true);
     }
 
-    private static JPanel lobbyScreen() {
-        Room[] rooms = new Room[8];
-        rooms[0] = new Room("Example 1", 1, 5);
-        rooms[1] = new Room("Example 2", 4, 5);
-        rooms[2] = new Room("Example 3", 10, 10);
-        rooms[3] = new Room("Example 4", 1, 10);
-        rooms[4] = new Room("Example 5", 3, 10);
-        rooms[5] = new Room("Example 6", 6, 10);
-        rooms[6] = new Room("Example 7", 7, 10);
-        rooms[7] = new Room("Example 8", 9, 10);
-//        lobby = new LobbyPane(rooms);
-
-        return lobby;
-    }
-
     public static void redirectTo(JPanel oldPane, JPanel nextPane) {
         frame.remove(oldPane);
         frame.add(nextPane);

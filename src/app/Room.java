@@ -2,6 +2,7 @@ package app;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Random;
 
 public class Room{
@@ -56,5 +57,10 @@ public class Room{
                 ", name=" + roomName +
                 ", numPlayer=" + numPlayer +
                 ", maxPlayer=" + maxPlayer + "}";
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(hostId);
     }
 }
