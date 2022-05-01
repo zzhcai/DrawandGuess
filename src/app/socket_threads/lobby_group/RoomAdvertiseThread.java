@@ -26,7 +26,7 @@ public class RoomAdvertiseThread extends Thread {
                 return;
             }
         }
-        System.out.println("Room advertise thread started at " + DrawandGuess.currentRoom.toString());
+        System.out.println("Room advertise thread started at " + DrawandGuess.currentRoom);
         ReliableMulticastSocket socket = MySocketFactory.newInstance(DrawandGuess.LOBBY_SOCKET_ADDRESS);
         while (!isInterrupted) {
             byte[] out = DrawandGuess.gson.toJson(DrawandGuess.currentRoom, Room.class).getBytes();

@@ -13,15 +13,12 @@ public class Room{
     public int maxPlayer;
     public int timeLimit;
     public ArrayList<String> dictionary = new ArrayList<>();
-    public ArrayList<Player> playerList = new ArrayList<>();
+    public final ArrayList<Player> playerList = new ArrayList<>();
     public int numRounds;
 
-    public Room(Player host, String roomName,int maxPlayer) {
+    public Room() {
         this.port = new Random().nextInt(10000) + 9000;
         this.address = new InetSocketAddress(randomIP(), port);
-        this.hostId = host.name;
-        this.roomName = roomName;
-        this.maxPlayer = maxPlayer;
     }
 
     private String randomIP() {

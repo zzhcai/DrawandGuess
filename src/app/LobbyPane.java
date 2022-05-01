@@ -107,6 +107,9 @@ public class LobbyPane extends JPanel {
 
         DrawandGuess.self.isHost = true;
         thread.interrupted = true;
-        WhiteBoardGUI.redirectTo(this, new WaitingRoomPane(new Room(DrawandGuess.self, roomName,  maxPlayerNum)));
+        DrawandGuess.currentRoom.hostId = DrawandGuess.self.name;
+        DrawandGuess.currentRoom.roomName = roomName;
+        DrawandGuess.currentRoom.maxPlayer = maxPlayerNum;
+        WhiteBoardGUI.redirectTo(this, new WaitingRoomPane());
     }
 }

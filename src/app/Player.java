@@ -12,7 +12,7 @@ import java.util.Objects;
 
 public class Player {
 
-    public final String name;
+    public String name;
     private String[] words;
     private String[] guesses;
     private Graphics[] drawings;
@@ -21,10 +21,6 @@ public class Player {
 
     public Long lastActive;
 
-    public Player(String name) {
-        this.name = name;
-        lastActive = Instant.now().toEpochMilli();
-    }
     @Override
     public boolean equals(Object o) {
         return o instanceof Player && this.name.equals(((Player) o).name);
