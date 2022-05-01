@@ -17,15 +17,15 @@ public class WaitingRoomPane extends JPanel {
     private static final DefaultListModel<String> dlmWords = new DefaultListModel<>();
     private final JList<String> wordList = new JList<>(dlmWords);
     private JScrollPane spWords = new JScrollPane(wordList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-    public RoomAdvertiseThread thread;
+    private final JTextField nameField;
+    private final JTextField numField;
 
     public WaitingRoomPane(Room r) {
         super();
         this.setLayout(null);
         DrawandGuess.currentRoom = r;
 
-        this.thread = new RoomAdvertiseThread(r);
-        thread.start();
+        new RoomAdvertiseThread().start();
 
         for (Player player: r.playerList) dlmPlayers.addElement(player);
 
@@ -43,7 +43,7 @@ public class WaitingRoomPane extends JPanel {
         JLabel nameLabel = new JLabel("Room name: ");
         nameLabel.setBounds(100, 50, 150, 30);
 
-        JTextField nameField = new JTextField();
+        nameField = new JTextField();
         nameField.setText(r.roomName);
         nameField.setBounds(250, 50, 200, 30);
         nameField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
@@ -58,7 +58,7 @@ public class WaitingRoomPane extends JPanel {
 //        formatter.setMaximum(10);
 //        formatter.setAllowsInvalid(false);
 //        JFormattedTextField numField = new JFormattedTextField(formatter);
-        JTextField numField = new JTextField(r.maxPlayer);
+        numField = new JTextField(r.maxPlayer);
         numField.setEditable(false);
         numField.setBounds(250, 110, 200, 30);
         numField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
@@ -93,7 +93,6 @@ public class WaitingRoomPane extends JPanel {
         });
 
         this.add(fileButton);
-
     }
 //TODO change dictionary should be multicasted to all players within the room
     public static void addDictionary(File file){
@@ -105,7 +104,6 @@ public class WaitingRoomPane extends JPanel {
                 DrawandGuess.currentRoom.dictionary.add(tempString);
                 dlmWords.addElement(tempString);
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }
