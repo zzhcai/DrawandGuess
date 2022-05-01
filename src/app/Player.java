@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.Objects;
 
 public class Player {
 
@@ -21,8 +22,18 @@ public class Player {
 
         this.name = name;
     }
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Player && this.name.equals(((Player) o).name);
+    }
 
-    public void setName(String name) {
-        this.name = name;
+    @Override
+    public String toString() {
+        return "Player = " + name;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
     }
 }
