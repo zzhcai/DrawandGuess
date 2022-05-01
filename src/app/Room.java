@@ -6,9 +6,9 @@ import java.util.Random;
 
 public class Room{
     // The unique identifier of the room is its current host's ID.
-    public String hostId;
-    public InetSocketAddress address;
-    public int port;
+    public Player host;
+    public final InetSocketAddress address;
+    public final int port;
     public String roomName;
     public int maxPlayer;
     public int timeLimit;
@@ -28,12 +28,12 @@ public class Room{
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof Room && this.hostId.equals(((Room) o).hostId);
+        return o instanceof Room && this.host.name.equals(((Room) o).host.name);
     }
 
     @Override
     public String toString() {
-        return "{roomid=" + hostId +
+        return "{host=" + host.name +
                 ", name=" + roomName +
                 ", numPlayer=" + playerList.size() +
                 ", maxPlayer=" + maxPlayer + "}";
@@ -41,6 +41,6 @@ public class Room{
 
     @Override
     public int hashCode() {
-        return Objects.hash(hostId);
+        return Objects.hash(host.name);
     }
 }

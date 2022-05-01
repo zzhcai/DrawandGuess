@@ -18,12 +18,15 @@ public class RoomAdvertiseThread extends Thread {
 
     // multicast room info to lobby every second
     public void run() {
-        while (!DrawandGuess.self.isHost) {
-            try {
-                sleep(1000);
-            } catch (InterruptedException e) {
-                System.err.println("RoomAdvertiseThread: This player never became the host.");
-                return;
+        synchronized (DrawandGuess.self) {
+            while (!DrawandGuess.self.isHost) {
+                try {
+                    DrawandGuess.self.wait();
+                } catch (InterruptedException e) {
+                    System.err.println("RoomAdvertiseThread: This player never became the host.");
+                    return;
+                }
+                DrawandGuess.self.notifyAll();
             }
         }
         System.out.println("Room advertise thread started at " + DrawandGuess.currentRoom);

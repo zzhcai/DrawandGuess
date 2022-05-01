@@ -10,7 +10,7 @@ import java.net.UnknownHostException;
 import java.time.Instant;
 import java.util.Objects;
 
-public class Player {
+public class Player implements Comparable<Player> {
 
     public String name;
     private String[] words;
@@ -34,5 +34,10 @@ public class Player {
     @Override
     public int hashCode() {
         return Objects.hash(name);
+    }
+
+    @Override
+    public int compareTo(Player o) {
+        return this.name.compareTo(o.name);
     }
 }

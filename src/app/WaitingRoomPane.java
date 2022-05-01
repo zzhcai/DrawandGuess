@@ -4,30 +4,36 @@ import app.UI_util.MyMouseAdapter;
 import app.UI_util.PlayerRenderer;
 import app.UI_util.VocabRenderer;
 import app.socket_threads.lobby_group.RoomAdvertiseThread;
+import app.socket_threads.room_group.HostAdvertiseRoomThread;
+import app.socket_threads.room_group.PlayerAdvertiseThread;
+import app.socket_threads.room_group.RoomReceiveThread;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.*;
+import java.util.ArrayList;
 
 public class WaitingRoomPane extends JPanel {
     private final DefaultListModel<Player> dlmPlayers = new DefaultListModel<>();
     private final JList<Player> playerList = new JList<>(dlmPlayers);
     private JScrollPane spPlayers = new JScrollPane(playerList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-    private static final DefaultListModel<String> dlmWords = new DefaultListModel<>();
+    private final DefaultListModel<String> dlmWords = new DefaultListModel<>();
     private final JList<String> wordList = new JList<>(dlmWords);
     private JScrollPane spWords = new JScrollPane(wordList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     private final JTextField nameField;
     private final JTextField numField;
 
-    public WaitingRoomPane(Room r) {
+    public WaitingRoomPane() {
         super();
         this.setLayout(null);
-        DrawandGuess.currentRoom = r;
 
         new RoomAdvertiseThread().start();
+        new HostAdvertiseRoomThread().start();
+        new PlayerAdvertiseThread().start();
+        new RoomReceiveThread().start();
 
-        for (Player player: r.playerList) dlmPlayers.addElement(player);
+        for (Player player: DrawandGuess.currentRoom.playerList) dlmPlayers.addElement(player);
 
         playerList.setCellRenderer(new PlayerRenderer());
         spPlayers.getVerticalScrollBar().setUnitIncrement(10);
@@ -44,7 +50,7 @@ public class WaitingRoomPane extends JPanel {
         nameLabel.setBounds(100, 50, 150, 30);
 
         nameField = new JTextField();
-        nameField.setText(r.roomName);
+        nameField.setText(DrawandGuess.currentRoom.roomName);
         nameField.setBounds(250, 50, 200, 30);
         nameField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
@@ -58,12 +64,12 @@ public class WaitingRoomPane extends JPanel {
 //        formatter.setMaximum(10);
 //        formatter.setAllowsInvalid(false);
 //        JFormattedTextField numField = new JFormattedTextField(formatter);
-        numField = new JTextField(r.maxPlayer);
+        numField = new JTextField(DrawandGuess.currentRoom.maxPlayer);
         numField.setEditable(false);
         numField.setBounds(250, 110, 200, 30);
         numField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
-        numField.setText(String.valueOf(r.maxPlayer));
+        numField.setText(String.valueOf(DrawandGuess.currentRoom.maxPlayer));
         numField.setBounds(250, 110, 200, 30);
         numField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
@@ -87,25 +93,55 @@ public class WaitingRoomPane extends JPanel {
             int returnVal = addChooser.showOpenDialog(null);
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
-                addDictionary(addChooser.getSelectedFile());
+                addDictionary(addChooser.getSelectedFile(), dlmWords);
             }
 
         });
 
         this.add(fileButton);
+
+        new WaitingRoomMonitorThread().start();
     }
 //TODO change dictionary should be multicasted to all players within the room
-    public static void addDictionary(File file){
+    public static void addDictionary(File file, DefaultListModel<String> dlmWords){
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String tempString;
-            DrawandGuess.currentRoom.dictionary.clear();
-            dlmWords.clear();
-            while ((tempString = reader.readLine()) != null) {
-                DrawandGuess.currentRoom.dictionary.add(tempString);
-                dlmWords.addElement(tempString);
+            synchronized (DrawandGuess.currentRoom) {
+                DrawandGuess.currentRoom.dictionary.clear();
+                while ((tempString = reader.readLine()) != null) {
+                    DrawandGuess.currentRoom.dictionary.add(tempString);
+                }
+                DrawandGuess.currentRoom.notifyAll();
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private class WaitingRoomMonitorThread extends Thread {
+        // TODO interrupt this thread when leaving this page
+        private volatile boolean isInterrupted = false;
+        @Override
+        public void run() {
+            ArrayList<Player> players;
+            ArrayList<String> words;
+            while (!isInterrupted) {
+                synchronized (DrawandGuess.currentRoom) {
+                    // Wait until getting notified current room's changed
+                    try {
+                        DrawandGuess.currentRoom.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    players = DrawandGuess.currentRoom.playerList;
+                    words = DrawandGuess.currentRoom.dictionary;
+                }
+                dlmPlayers.removeAllElements();
+                dlmPlayers.addAll(players);
+                dlmWords.removeAllElements();
+                dlmWords.addAll(words);
+                nameField.setText(DrawandGuess.currentRoom.roomName);
+            }
         }
     }
 }
