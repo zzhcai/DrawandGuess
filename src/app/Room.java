@@ -10,7 +10,6 @@ public class Room{
     public InetSocketAddress address;
     public int port;
     public String roomName;
-    public int numPlayer;
     public int maxPlayer;
     public int timeLimit;
     public ArrayList<String> dictionary = new ArrayList<>();
@@ -23,7 +22,6 @@ public class Room{
         this.hostId = host.name;
         playerList.add(host);
         this.roomName = roomName;
-        this.numPlayer = 1;
         this.maxPlayer = maxPlayer;
     }
 
@@ -41,7 +39,7 @@ public class Room{
     public String toString() {
         return "{roomid=" + hostId +
                 ", name=" + roomName +
-                ", numPlayer=" + numPlayer +
+                ", numPlayer=" + playerList.size() +
                 ", maxPlayer=" + maxPlayer + "}";
     }
 

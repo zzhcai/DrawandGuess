@@ -19,7 +19,6 @@ public class DrawandGuess {
     }
 
     public static void main(String[] args) throws IOException {
-        self = new Player();
         WhiteBoardGUI.setUp();
     }
 }

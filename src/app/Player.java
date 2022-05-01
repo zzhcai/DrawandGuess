@@ -16,12 +16,6 @@ public class Player {
     private Graphics[] drawings;
     public boolean isHost = false;
     public boolean ready = false;
-    public static ReliableMulticastSocket socket;
-
-    public Player() throws IOException {
-        socket = new ReliableMulticastSocket(9000);
-    }
-
 
     public Player(String name) {
 
