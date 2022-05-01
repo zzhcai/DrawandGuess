@@ -32,7 +32,7 @@ public class LobbyReceiveThread extends Thread {
         while (!interrupted) {
             DatagramPacket p = new DatagramPacket(new byte[65507], 65507);
             socket.receive(p);
-            System.out.println("received: " + new String(p.getData()));
+            System.out.println("received at lobby: " + new String(p.getData()));
             Room room = DrawandGuess.gson.fromJson(new String(p.getData(), 0, p.getLength()), Room.class);
             synchronized (roomsLastUpdated) {
                 roomsLastUpdated.remove(room);

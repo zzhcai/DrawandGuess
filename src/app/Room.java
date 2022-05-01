@@ -7,8 +7,8 @@ import java.util.Random;
 public class Room{
     // The unique identifier of the room is its current host's ID.
     public Player host;
-    public final InetSocketAddress address;
-    public final int port;
+    public String IP;
+    public int port;
     public String roomName;
     public int maxPlayer;
     public int timeLimit;
@@ -18,10 +18,10 @@ public class Room{
 
     public Room() {
         this.port = new Random().nextInt(10000) + 9000;
-        this.address = new InetSocketAddress(randomIP(), port);
+        this.IP = randomIP();
     }
 
-    private String randomIP() {
+    public String randomIP() {
         Random r = new Random();
         return (r.nextInt(15)+224) + "." + r.nextInt(256) + "." + r.nextInt(256) + "." + r.nextInt(256);
     }
@@ -36,11 +36,14 @@ public class Room{
         return "{host=" + host.name +
                 ", name=" + roomName +
                 ", numPlayer=" + playerList.size() +
-                ", maxPlayer=" + maxPlayer + "}";
+                ", maxPlayer=" + maxPlayer +
+                ", address=" + IP + "port=" + port + "}";
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(host.name);
     }
+
+    public InetSocketAddress getAddress() { return new InetSocketAddress(IP, port); }
 }

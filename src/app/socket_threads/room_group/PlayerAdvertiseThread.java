@@ -3,20 +3,20 @@ package app.socket_threads.room_group;
 import app.DrawandGuess;
 import app.MySocketFactory;
 import app.Player;
-import app.Room;
 import srm.ReliableMulticastSocket;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.Collections;
 
 public class PlayerAdvertiseThread extends Thread {
     public volatile boolean isInterrupted = false;
     @Override
     public void run() {
-        System.out.println("Player advertise thread started at " + DrawandGuess.currentRoom);
-        ReliableMulticastSocket socket = MySocketFactory.newInstance(DrawandGuess.currentRoom.address);
+        System.out.println("Player advertise thread started at " + DrawandGuess.currentRoom.getAddress());
+        ReliableMulticastSocket socket = MySocketFactory.newInstance(DrawandGuess.currentRoom.getAddress());
         while (!isInterrupted) {
             Collections.sort(DrawandGuess.currentRoom.playerList);
             // Check if it's time to become the new host
@@ -31,7 +31,8 @@ public class PlayerAdvertiseThread extends Thread {
             }
             byte[] out = DrawandGuess.gson.toJson(DrawandGuess.self, Player.class).getBytes();
             try {
-                socket.send(new DatagramPacket(out, out.length, DrawandGuess.currentRoom.address));
+                socket.send(new DatagramPacket(out, out.length, DrawandGuess.currentRoom.getAddress()));
+                System.out.println("sent at room: " + Arrays.toString(out));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -43,7 +44,7 @@ public class PlayerAdvertiseThread extends Thread {
         }
         System.out.println("Player advertise thread closed");
         try {
-            socket.leaveGroup(DrawandGuess.currentRoom.address, null);
+            socket.leaveGroup(DrawandGuess.currentRoom.getAddress(), null);
         } catch (IOException e) {
             e.printStackTrace();
         }

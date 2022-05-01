@@ -8,17 +8,18 @@ import srm.ReliableMulticastSocket;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.time.Instant;
+import java.net.InetSocketAddress;
 
 public class RoomReceiveThread extends Thread {
     public volatile boolean interrupted = false;
     @Override
     public void run() {
-        ReliableMulticastSocket socket = MySocketFactory.newInstance(DrawandGuess.currentRoom.address);
+        ReliableMulticastSocket socket = MySocketFactory.newInstance(DrawandGuess.currentRoom.getAddress());
+        System.out.println("Room receive thread started at " + DrawandGuess.currentRoom.getAddress());
         while (!interrupted) {
             DatagramPacket p = new DatagramPacket(new byte[65507], 65507);
             socket.receive(p);
-            System.out.println("received: " + new String(p.getData()));
+            System.out.println("received at room: " + new String(p.getData()));
             Player player = DrawandGuess.gson.fromJson(new String(p.getData(), 0, p.getLength()), Player.class);
             if (player.name == null) {
                 Room room = DrawandGuess.gson.fromJson(new String(p.getData(), 0, p.getLength()), Room.class);

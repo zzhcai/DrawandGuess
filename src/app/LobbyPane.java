@@ -51,9 +51,20 @@ public class LobbyPane extends JPanel {
 
         joinRoom = new JButton("Join Room");
         joinRoom.addActionListener(e -> {
-            //TODO
-            System.out.println(roomList.getSelectedIndex());
-            System.out.println(roomList.getSelectedValue());
+            Room room = roomList.getSelectedValue();
+            synchronized (DrawandGuess.currentRoom) {
+                DrawandGuess.currentRoom.host = room.host;
+                DrawandGuess.currentRoom.roomName = room.roomName;
+                DrawandGuess.currentRoom.maxPlayer = room.maxPlayer;
+                DrawandGuess.currentRoom.timeLimit = room.timeLimit;
+                DrawandGuess.currentRoom.numRounds = room.numRounds;
+                DrawandGuess.currentRoom.IP = room.IP;
+                DrawandGuess.currentRoom.port = room.port;
+                DrawandGuess.currentRoom.playerList.add(DrawandGuess.self);
+            }
+            DrawandGuess.self.isHost = false;
+            thread.interrupted = true;
+            WhiteBoardGUI.redirectTo(this, new WaitingRoomPane());
         });
         joinRoom.setBounds(700, 720, 150, 30);
         joinRoom.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
@@ -107,10 +118,14 @@ public class LobbyPane extends JPanel {
 
         DrawandGuess.self.isHost = true;
         thread.interrupted = true;
-        DrawandGuess.currentRoom.host = DrawandGuess.self;
-        DrawandGuess.currentRoom.roomName = roomName;
-        DrawandGuess.currentRoom.maxPlayer = maxPlayerNum;
-        DrawandGuess.currentRoom.playerList.add(DrawandGuess.self);
+        synchronized (DrawandGuess.currentRoom) {
+            DrawandGuess.currentRoom.host = DrawandGuess.self;
+            DrawandGuess.currentRoom.roomName = roomName;
+            DrawandGuess.currentRoom.maxPlayer = maxPlayerNum;
+            DrawandGuess.currentRoom.playerList.add(DrawandGuess.self);
+            DrawandGuess.currentRoom.timeLimit = 0;
+            DrawandGuess.currentRoom.numRounds = 0;
+        }
         WhiteBoardGUI.redirectTo(this, new WaitingRoomPane());
     }
 }
