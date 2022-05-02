@@ -31,14 +31,14 @@ public class ReliableMulticastSocket extends MulticastSocket
 	/** Group IP address */
 	private volatile InetAddress group = null;
 	/** DATA packet sequencer */
-	protected long sequencer = 1;
+	protected long sequencer;
 
 	/** The dynamic rate of sending SESSION messages, in seconds, that
 	 *  the bandwidth consumed is adaptive to 5% of the aggregate bandwidth. */
-	private long sessionRate = SESSION_RATE_MIN;
+	private long sessionRate;
 	protected static final long SESSION_RATE_MAX = 30;
 	protected static final long SESSION_RATE_MIN = 10;
-	private final Timer sessionSender = new Timer();
+	private Timer sessionSender;
 
 	/** The aggregate bandwidth in bytes (regardless of headers' overhead),
 	 *  since from the last session message. */
@@ -47,10 +47,10 @@ public class ReliableMulticastSocket extends MulticastSocket
 	private final AtomicInteger sessionBW = new AtomicInteger(0);
 
 	/** Components */
-	protected final StateTable states = new StateTable(1);
-	protected final DataCache cache = new DataCache(5);
-	protected final RequestRepairPool pool = new RequestRepairPool(this);
-	private final ReceiverDispatcher rd = new ReceiverDispatcher(this);
+	protected StateTable states;
+	protected DataCache cache;
+	protected RequestRepairPool pool;
+	private ReceiverDispatcher rd;
 
 	/**
 	 * Constructs a multicast socket and
@@ -58,7 +58,7 @@ public class ReliableMulticastSocket extends MulticastSocket
 	 */
 	public ReliableMulticastSocket(int port) throws IOException {
 		super(port);
-		init();
+		initLogger();
 	}
 
 	/**
@@ -67,10 +67,10 @@ public class ReliableMulticastSocket extends MulticastSocket
 	 */
 	public ReliableMulticastSocket(SocketAddress bindaddr) throws IOException {
 		super(bindaddr);
-		init();
+		initLogger();
 	}
 
-	private void init()
+	private void initLogger()
 	{
 		// Assigning handler to logger
 		Handler handler;
@@ -85,12 +85,6 @@ public class ReliableMulticastSocket extends MulticastSocket
 		catch (Exception e) {
 			logger.log(Level.SEVERE, "Error occurs in logger.", e);
 		}
-
-		// Receiving at background starts
-		rd.start();
-
-		// Session sending routines, starts once group is specified
-		sessionSender.schedule(new SessionSendTask(), 0);
 	}
 
 	/**
@@ -159,15 +153,33 @@ public class ReliableMulticastSocket extends MulticastSocket
 	}
 
 	@Override
-	public synchronized void joinGroup(SocketAddress mcastaddr, NetworkInterface netIf) throws IOException {
+	public synchronized void joinGroup(SocketAddress mcastaddr, NetworkInterface netIf) throws IOException
+	{
 		super.joinGroup(mcastaddr, netIf);
+		sequencer = 1;
+		sessionSender = new Timer();
+		sessionRate = SESSION_RATE_MIN;
+		aggregBW.set(0);
+		sessionBW.set(0);
+		states = new StateTable(1);
+		cache = new DataCache(5);
+		pool = new RequestRepairPool(this);
+		rd = new ReceiverDispatcher(this);
 		group = ((InetSocketAddress) mcastaddr).getAddress();
+		// Session sending routines, starts once group is specified
+		sessionSender.schedule(new SessionSendTask(), 0);
+		rd.start();   // Receiving at background
 	}
 
 	@Override
 	public void leaveGroup(SocketAddress mcastaddr, NetworkInterface netIf) throws IOException {
 		super.leaveGroup(mcastaddr, netIf);
 		group = null;
+		sessionSender.cancel();
+		sessionSender.purge();
+		pool.close();
+		cache.getUpdater().cancel();
+		cache.getUpdater().purge();
 	}
 
 	// send DATA only
@@ -213,17 +225,6 @@ public class ReliableMulticastSocket extends MulticastSocket
 	protected void _receive(DatagramPacket p) throws IOException {
 		super.receive(p);
 		aggregBW.addAndGet(p.getLength());
-	}
-
-	@Override
-	public void close() {
-		super.close();
-		sessionSender.cancel();
-		pool.close();
-		cache.getUpdater().cancel();
-		// For garbage collection
-		sessionSender.purge();
-		cache.getUpdater().purge();
 	}
 
 	/** Disabled. */

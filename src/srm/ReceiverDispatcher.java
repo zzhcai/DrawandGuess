@@ -57,7 +57,7 @@ public class ReceiverDispatcher extends Thread
 			return msg;
 		}
 		catch (IOException e) {
-			ReliableMulticastSocket.logger.log(Level.SEVERE, "Socket cannot receive.", e);
+			ReliableMulticastSocket.logger.log(Level.WARNING, "Socket cannot receive.", e);
 			currentThread().interrupt();
 			return null;
 		}
