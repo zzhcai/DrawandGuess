@@ -5,24 +5,22 @@ import app.MySocketFactory;
 import app.Room;
 import srm.ReliableMulticastSocket;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
 /**
  * A thread that constantly receives rooms' advertisement and updates the lobby accordingly.
+ * Received data is kept in the concurrent map that shared with the main thread.
  * This thread should only run when the player is in the lobby panel.
  */
-public class LobbyReceiveThread extends Thread {
+public class InLobbyReceiveThread extends Thread {
     private ReliableMulticastSocket socket;
     private final ConcurrentMap<Room, Instant> roomsLastUpdated;
     public volatile boolean interrupted = false;
 
-    public LobbyReceiveThread(ConcurrentMap<Room, Instant> roomsLastUpdated) {
+    public InLobbyReceiveThread(ConcurrentMap<Room, Instant> roomsLastUpdated) {
         this.roomsLastUpdated = roomsLastUpdated;
         socket = MySocketFactory.newInstance(DrawandGuess.LOBBY_ADDRESS, DrawandGuess.LOBBY_PORT);
     }

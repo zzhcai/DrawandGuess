@@ -3,19 +3,15 @@ package app;
 import app.UI_util.MyMouseAdapter;
 import app.UI_util.PlayerRenderer;
 import app.UI_util.VocabRenderer;
-import app.socket_threads.lobby_group.RoomAdvertiseThread;
-import app.socket_threads.room_group.HostAdvertiseRoomThread;
-import app.socket_threads.room_group.PlayerAdvertiseThread;
-import app.socket_threads.room_group.RoomReceiveThread;
+import app.socket_threads.lobby_group.InLobbyAdvertiseThread;
+import app.socket_threads.room_group.InRoomAdvertiseThread;
+import app.socket_threads.room_group.InRoomReceiveThread;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.io.*;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collections;
 
 public class WaitingRoomPane extends JPanel {
@@ -33,10 +29,9 @@ public class WaitingRoomPane extends JPanel {
         super();
         this.setLayout(null);
 
-        new RoomAdvertiseThread().start();
-        new HostAdvertiseRoomThread().start();
-        new PlayerAdvertiseThread().start();
-        new RoomReceiveThread().start();
+        new InLobbyAdvertiseThread().start();
+        new InRoomAdvertiseThread().start();
+        new InRoomReceiveThread().start();
 
         for (Player player: DrawandGuess.currentRoom.playerList) dlmPlayers.addElement(player);
 
@@ -110,7 +105,7 @@ public class WaitingRoomPane extends JPanel {
         this.add(fileButton);
         new WaitingRoomMonitorThread().start();
     }
-//TODO change dictionary should be multicasted to all players within the room
+
     private void addDictionary(File file){
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String tempString;
@@ -126,6 +121,10 @@ public class WaitingRoomPane extends JPanel {
         }
     }
 
+    /**
+     * This class starts and ends with the WaitingROomPane. It waits on the currentRoom object to be changed,
+     * and updates the UI of the waiting room accordingly.
+     */
     private class WaitingRoomMonitorThread extends Thread {
         // TODO interrupt this thread when leaving this page
         private volatile boolean isInterrupted = false;

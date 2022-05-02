@@ -8,10 +8,14 @@ import srm.ReliableMulticastSocket;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.InetSocketAddress;
 import java.time.Instant;
 
-public class RoomReceiveThread extends Thread {
+/**
+ * This thread receives all incoming messages within the room.
+ * Either a player object or a room object would be received.
+ * Updates the information accordingly.
+ */
+public class InRoomReceiveThread extends Thread {
     public volatile boolean interrupted = false;
     @Override
     public void run() {
@@ -21,6 +25,8 @@ public class RoomReceiveThread extends Thread {
             DatagramPacket p = new DatagramPacket(new byte[65507], 65507);
             socket.receive(p);
             System.out.println("received at room: " + new String(p.getData()));
+
+            // We determine the type by parsing into one type and checking if a must-have field is null.
             Player player = DrawandGuess.gson.fromJson(new String(p.getData(), 0, p.getLength()), Player.class);
             if (player.name == null) {
                 Room room = DrawandGuess.gson.fromJson(new String(p.getData(), 0, p.getLength()), Room.class);
@@ -30,7 +36,6 @@ public class RoomReceiveThread extends Thread {
                     DrawandGuess.currentRoom.host = room.host;
                     DrawandGuess.currentRoom.numRounds = room.numRounds;
                     DrawandGuess.currentRoom.timeLimit = room.timeLimit;
-                    DrawandGuess.currentRoom.playerList = room.playerList;
                     DrawandGuess.currentRoom.notifyAll();
                 }
             } else {

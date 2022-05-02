@@ -4,6 +4,12 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Random;
 
+/**
+ * A room that keeps all the information of the game itself and all users inside.
+ * Its unique identifier is the current host's name, and it is the only thing considered when comparing rooms.
+ * The IP and port of a room should not change once decided, but in exchange for making the currentRoom object
+ * final in the main class, these two fields are not final here. DO NOT CHANGE THEM.
+ */
 public class Room{
     // The unique identifier of the room is its current host's ID.
     public Player host;

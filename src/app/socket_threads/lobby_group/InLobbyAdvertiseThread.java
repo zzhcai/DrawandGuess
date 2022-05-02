@@ -11,13 +11,14 @@ import java.net.InetAddress;
 
 /**
  * A thread that constantly advertises the room's existence to the lobby.
- * This thread should only be active for the host of the room.
+ * This thread would wait until this player becomes the host of the room.
  */
-public class RoomAdvertiseThread extends Thread {
+public class InLobbyAdvertiseThread extends Thread {
     public volatile boolean isInterrupted = false;
 
     // multicast room info to lobby every second
     public void run() {
+        // Check if this player has become the host of the room
         synchronized (DrawandGuess.self) {
             while (!DrawandGuess.self.isHost) {
                 try {
@@ -29,8 +30,10 @@ public class RoomAdvertiseThread extends Thread {
                 DrawandGuess.self.notifyAll();
             }
         }
+
         System.out.println("Room advertise thread started at " + DrawandGuess.currentRoom);
         ReliableMulticastSocket socket = MySocketFactory.newInstance(null, DrawandGuess.LOBBY_PORT);
+        // Multicast this room to the lobby every second
         while (!isInterrupted) {
             byte[] out = DrawandGuess.gson.toJson(DrawandGuess.currentRoom, Room.class).getBytes();
             try {

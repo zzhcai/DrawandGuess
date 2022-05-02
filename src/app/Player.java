@@ -10,6 +10,11 @@ import java.net.UnknownHostException;
 import java.time.Instant;
 import java.util.Objects;
 
+/**
+ * A player in the game.
+ * We assume unique name by appending a random number to it.
+ * Comparing players only checks if they have the same name.
+ */
 public class Player implements Comparable<Player> {
 
     public String name;
@@ -18,7 +23,7 @@ public class Player implements Comparable<Player> {
     private Graphics[] drawings;
     public boolean isHost = false;
     public boolean ready = false;
-
+    // This field is actively added when this player object is received as a multicast message.
     public Long lastActive;
 
     @Override

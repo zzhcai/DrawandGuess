@@ -3,19 +3,24 @@ package app.socket_threads.room_group;
 import app.DrawandGuess;
 import app.MySocketFactory;
 import app.Player;
+import app.Room;
 import srm.ReliableMulticastSocket;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.net.DatagramPacket;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 
-public class PlayerAdvertiseThread extends Thread {
+/**
+ * This thread periodically multicasts the player information to the room, and only the host would
+ * also use this thread to multicast room information to the whole room as well.
+ * This thread also periodically (the same period as multicasting) detects if the host is absent,
+ * and decide if this player can be the new host.
+ */
+public class InRoomAdvertiseThread extends Thread {
     public volatile boolean isInterrupted = false;
 
+    // Only become the host after MAX_NO_HOST_COUNT times updates without a host.
     private int noHostCount = 0;
     private final int MAX_NO_HOST_COUNT = 3;
 
@@ -26,6 +31,7 @@ public class PlayerAdvertiseThread extends Thread {
         while (!isInterrupted) {
             ArrayList<Player> players = DrawandGuess.currentRoom.playerList;
             Collections.sort(players);
+
             // Check if it's time to become the new host
             if (players.size() > 0
                     && !players.contains(DrawandGuess.currentRoom.host)
@@ -42,10 +48,17 @@ public class PlayerAdvertiseThread extends Thread {
                     }
                 }
             } else noHostCount = 0;
-            byte[] out = DrawandGuess.gson.toJson(DrawandGuess.self, Player.class).getBytes();
+
+            // Multicast player and room information
+            byte[] playerOut = DrawandGuess.gson.toJson(DrawandGuess.self, Player.class).getBytes();
             try {
-                socket.send(new DatagramPacket(out, out.length, DrawandGuess.currentRoom.getAddress()));
+                socket.send(new DatagramPacket(playerOut, playerOut.length, DrawandGuess.currentRoom.getAddress()));
                 System.out.println("sent at room: " + DrawandGuess.self);
+                if (DrawandGuess.self.isHost) {
+                    byte[] roomOut = DrawandGuess.gson.toJson(DrawandGuess.currentRoom, Room.class).getBytes();
+                    socket.send(new DatagramPacket(roomOut, roomOut.length, DrawandGuess.currentRoom.getAddress()));
+                    System.out.println("sent at room: " + DrawandGuess.currentRoom);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

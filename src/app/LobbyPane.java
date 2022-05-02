@@ -2,7 +2,7 @@ package app;
 
 import app.UI_util.MyMouseAdapter;
 import app.UI_util.RoomRenderer;
-import app.socket_threads.lobby_group.LobbyReceiveThread;
+import app.socket_threads.lobby_group.InLobbyReceiveThread;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,14 +22,14 @@ public class LobbyPane extends JPanel {
     private JButton joinRoom;
     private JTextField searchBar;
     private JButton searchButton;
-    private LobbyReceiveThread thread;
+    private InLobbyReceiveThread thread;
     private JButton refreshButton;
 
     public LobbyPane() {
         super();
         this.setLayout(null);
 
-        thread = new LobbyReceiveThread(roomsLastUpdated);
+        thread = new InLobbyReceiveThread(roomsLastUpdated);
         thread.start();
         roomList.setCellRenderer(new RoomRenderer());
 
@@ -48,7 +48,8 @@ public class LobbyPane extends JPanel {
 
         createRoom.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
 
-
+        // Joining a selected room. Do not worry if the room has become empty after the last refresh,
+        // joining an empty room results in you become the new host automatically, no worries.
         joinRoom = new JButton("Join Room");
         joinRoom.addActionListener(e -> {
             Room room = roomList.getSelectedValue();
@@ -79,6 +80,8 @@ public class LobbyPane extends JPanel {
         searchButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
         //TODO search hostID and join
 
+        // Refresh works by sharing a concurrent map with the socket thread,
+        // only when the refresh button is pressed, does the UI retrieve contents from the map.
         refreshButton = new JButton("Refresh");
         refreshButton.setBounds(780, 55, 100, 30);
         refreshButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
@@ -88,7 +91,7 @@ public class LobbyPane extends JPanel {
             dlm.removeAllElements();
             Set<Map.Entry<Room, Instant>> entrySet = roomsLastUpdated.entrySet();
             for (Map.Entry<Room, Instant> entry: entrySet) {
-                if (Duration.between(entry.getValue(), now).toMillis() < 1500) {
+                if (Duration.between(entry.getValue(), now).toMillis() < DrawandGuess.ROOM_TIMEOUT) {
                     dlm.addElement(entry.getKey());
                 } else roomsLastUpdated.remove(entry.getKey());
             }
@@ -103,6 +106,10 @@ public class LobbyPane extends JPanel {
         this.add(refreshButton);
     }
 
+    /**
+     * Use JOptionPane dialogs to get necessary user input and update the final currentRoom object.
+     * Then redirect to the waiting room panel.
+     */
     private void createRoom() {
         String roomName = JOptionPane.showInputDialog(this,
                     "Please enter the room name",
