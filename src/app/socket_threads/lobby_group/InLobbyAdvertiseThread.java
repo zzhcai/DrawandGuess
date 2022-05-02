@@ -48,11 +48,6 @@ public class InLobbyAdvertiseThread extends Thread {
             }
         }
         System.out.println("Room advertise thread closed");
-        try {
-            socket.leaveGroup(DrawandGuess.LOBBY_SOCKET_ADDRESS, null);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         socket.close();
     }
 }

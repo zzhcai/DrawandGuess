@@ -117,6 +117,7 @@ public class LobbyPane extends JPanel {
         if (maxPlayerNum == null) return;
 
         DrawandGuess.self.isHost = true;
+        DrawandGuess.self.ready = true;
         thread.interrupted = true;
         synchronized (DrawandGuess.currentRoom) {
             DrawandGuess.currentRoom.host = DrawandGuess.self;
