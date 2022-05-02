@@ -16,7 +16,7 @@ public class RoomReceiveThread extends Thread {
     @Override
     public void run() {
         ReliableMulticastSocket socket = MySocketFactory.newInstance(DrawandGuess.currentRoom.IP, DrawandGuess.currentRoom.port);
-        System.out.println("Room receive thread started at " + socket.getInetAddress());
+        System.out.println("Room receive thread started");
         while (!interrupted) {
             DatagramPacket p = new DatagramPacket(new byte[65507], 65507);
             socket.receive(p);
@@ -29,7 +29,6 @@ public class RoomReceiveThread extends Thread {
                     DrawandGuess.currentRoom.dictionary = room.dictionary;
                     DrawandGuess.currentRoom.host = room.host;
                     DrawandGuess.currentRoom.numRounds = room.numRounds;
-                    DrawandGuess.currentRoom.playerList = room.playerList;
                     DrawandGuess.currentRoom.timeLimit = room.timeLimit;
                     DrawandGuess.currentRoom.notifyAll();
                 }

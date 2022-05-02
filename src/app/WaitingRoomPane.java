@@ -11,6 +11,8 @@ import app.socket_threads.room_group.RoomReceiveThread;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.*;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -56,6 +58,8 @@ public class WaitingRoomPane extends JPanel {
         nameField.setBounds(250, 50, 200, 30);
         nameField.setEditable(false);
         nameField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
+        nameField.setToolTipText("Press enter to confirm name change");
+        nameField.addActionListener(e -> DrawandGuess.currentRoom.roomName = nameField.getText());
 
         JLabel numLabel = new JLabel("Max player num: ");
         numLabel.setBounds(100, 110, 150, 30);
@@ -147,7 +151,7 @@ public class WaitingRoomPane extends JPanel {
                 dlmPlayers.addAll(DrawandGuess.currentRoom.playerList);
                 dlmWords.removeAllElements();
                 dlmWords.addAll(DrawandGuess.currentRoom.dictionary);
-                nameField.setText(DrawandGuess.currentRoom.roomName);
+                if (!hasBecomeHost) nameField.setText(DrawandGuess.currentRoom.roomName);
             }
         }
     }
