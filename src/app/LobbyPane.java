@@ -19,7 +19,7 @@ public class LobbyPane extends JPanel {
     private final ConcurrentMap<Room, Instant> roomsLastUpdated = new ConcurrentHashMap<>();
     private JList<Room> roomList = new JList<>(dlm);
     private JButton createRoom;
-    private JButton joinRoom;
+    private JButton joinRoomButton;
     private JTextField searchBar;
     private JButton searchButton;
     private InLobbyReceiveThread thread;
@@ -50,26 +50,13 @@ public class LobbyPane extends JPanel {
 
         // Joining a selected room. Do not worry if the room has become empty after the last refresh,
         // joining an empty room results in you become the new host automatically, no worries.
-        joinRoom = new JButton("Join Room");
-        joinRoom.addActionListener(e -> {
+        joinRoomButton = new JButton("Join Room");
+        joinRoomButton.addActionListener(e -> {
             Room room = roomList.getSelectedValue();
-            if (room != null) {
-                synchronized (DrawandGuess.currentRoom) {
-                    DrawandGuess.currentRoom.host = room.host;
-                    DrawandGuess.currentRoom.roomName = room.roomName;
-                    DrawandGuess.currentRoom.maxPlayer = room.maxPlayer;
-                    DrawandGuess.currentRoom.timeLimit = room.timeLimit;
-                    DrawandGuess.currentRoom.numRounds = room.numRounds;
-                    DrawandGuess.currentRoom.IP = room.IP;
-                    DrawandGuess.currentRoom.port = room.port;
-                }
-                DrawandGuess.self.isHost = false;
-                thread.interrupted = true;
-                WhiteBoardGUI.redirectTo(this, new WaitingRoomPane());
-            }
+            joinRoom(room);
         });
-        joinRoom.setBounds(700, 720, 150, 30);
-        joinRoom.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
+        joinRoomButton.setBounds(700, 720, 150, 30);
+        joinRoomButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
 
         searchBar = new JTextField();
         searchBar.setBounds(350, 50, 300, 40);
@@ -78,7 +65,19 @@ public class LobbyPane extends JPanel {
         searchButton = new JButton("Search");
         searchButton.setBounds(655, 55, 100, 30);
         searchButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
-        //TODO search hostID and join
+        searchButton.addActionListener(e -> {
+            searchButton.setEnabled(false);
+            refresh();
+            dlm.removeAllElements();
+            synchronized (roomsLastUpdated) {
+                for (Room room: roomsLastUpdated.keySet()) {
+                    if (room.roomName.contains(searchBar.getText())) {
+                        dlm.addElement(room);
+                    }
+                }
+            }
+            searchButton.setEnabled(true);
+        });
 
         // Refresh works by sharing a concurrent map with the socket thread,
         // only when the refresh button is pressed, does the UI retrieve contents from the map.
@@ -87,20 +86,13 @@ public class LobbyPane extends JPanel {
         refreshButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
         refreshButton.addActionListener(e -> {
             refreshButton.setEnabled(false);
-            Instant now = Instant.now();
-            dlm.removeAllElements();
-            Set<Map.Entry<Room, Instant>> entrySet = roomsLastUpdated.entrySet();
-            for (Map.Entry<Room, Instant> entry: entrySet) {
-                if (Duration.between(entry.getValue(), now).toMillis() < DrawandGuess.ROOM_TIMEOUT) {
-                    dlm.addElement(entry.getKey());
-                } else roomsLastUpdated.remove(entry.getKey());
-            }
+            refresh();
             refreshButton.setEnabled(true);
         });
 
         this.add(sp);
         this.add(createRoom);
-        this.add(joinRoom);
+        this.add(joinRoomButton);
         this.add(searchBar);
         this.add(searchButton);
         this.add(refreshButton);
@@ -134,5 +126,40 @@ public class LobbyPane extends JPanel {
             DrawandGuess.currentRoom.numRounds = 0;
         }
         WhiteBoardGUI.redirectTo(this, new WaitingRoomPane());
+    }
+
+    /**
+     * Join an existing not-null room.
+     * @param room the room to join
+     */
+    private void joinRoom(Room room) {
+        if (room != null) {
+            synchronized (DrawandGuess.currentRoom) {
+                DrawandGuess.currentRoom.host = room.host;
+                DrawandGuess.currentRoom.roomName = room.roomName;
+                DrawandGuess.currentRoom.maxPlayer = room.maxPlayer;
+                DrawandGuess.currentRoom.timeLimit = room.timeLimit;
+                DrawandGuess.currentRoom.numRounds = room.numRounds;
+                DrawandGuess.currentRoom.IP = room.IP;
+                DrawandGuess.currentRoom.port = room.port;
+            }
+            DrawandGuess.self.isHost = false;
+            thread.interrupted = true;
+            WhiteBoardGUI.redirectTo(this, new WaitingRoomPane());
+        }
+    }
+
+    /**
+     * Refresh the current room list to eliminate any inactive rooms
+     */
+    private void refresh() {
+        Instant now = Instant.now();
+        dlm.removeAllElements();
+        Set<Map.Entry<Room, Instant>> entrySet = roomsLastUpdated.entrySet();
+        for (Map.Entry<Room, Instant> entry: entrySet) {
+            if (Duration.between(entry.getValue(), now).toMillis() < DrawandGuess.ROOM_TIMEOUT) {
+                dlm.addElement(entry.getKey());
+            } else roomsLastUpdated.remove(entry.getKey());
+        }
     }
 }
