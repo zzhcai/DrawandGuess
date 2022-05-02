@@ -9,6 +9,7 @@ import srm.ReliableMulticastSocket;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
+import java.time.Instant;
 
 public class RoomReceiveThread extends Thread {
     public volatile boolean interrupted = false;
@@ -33,6 +34,7 @@ public class RoomReceiveThread extends Thread {
                     DrawandGuess.currentRoom.notifyAll();
                 }
             } else {
+                player.lastActive = Instant.now().toEpochMilli();
                 synchronized (DrawandGuess.currentRoom) {
                     DrawandGuess.currentRoom.playerList.remove(player);
                     DrawandGuess.currentRoom.playerList.add(player);

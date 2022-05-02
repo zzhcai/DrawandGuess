@@ -6,8 +6,10 @@ import app.Player;
 import srm.ReliableMulticastSocket;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -22,22 +24,24 @@ public class PlayerAdvertiseThread extends Thread {
         System.out.println("Player advertise thread started at " + DrawandGuess.currentRoom.getAddress());
         ReliableMulticastSocket socket = MySocketFactory.newInstance(null, DrawandGuess.currentRoom.port);
         while (!isInterrupted) {
-            Collections.sort(DrawandGuess.currentRoom.playerList);
+            ArrayList<Player> players = DrawandGuess.currentRoom.playerList;
+            Collections.sort(players);
             // Check if it's time to become the new host
-            synchronized (DrawandGuess.currentRoom) {
-                if (!DrawandGuess.currentRoom.playerList.contains(DrawandGuess.currentRoom.host)
-                        && DrawandGuess.currentRoom.playerList.get(0).equals(DrawandGuess.self)) {
-                    noHostCount++;
-                    if (noHostCount >= MAX_NO_HOST_COUNT) {
-                        synchronized (DrawandGuess.self) {
-                            DrawandGuess.self.isHost = true;
-                            DrawandGuess.self.notifyAll();
-                        }
+            if (players.size() > 0
+                    && !players.contains(DrawandGuess.currentRoom.host)
+                    && players.get(0).equals(DrawandGuess.self)) {
+                noHostCount++;
+                if (noHostCount >= MAX_NO_HOST_COUNT) {
+                    synchronized (DrawandGuess.self) {
+                        DrawandGuess.self.isHost = true;
+                        DrawandGuess.self.notifyAll();
+                    }
+                    synchronized (DrawandGuess.currentRoom) {
                         DrawandGuess.currentRoom.host = DrawandGuess.self;
                         DrawandGuess.currentRoom.notifyAll();
                     }
-                } else noHostCount = 0;
-            }
+                }
+            } else noHostCount = 0;
             byte[] out = DrawandGuess.gson.toJson(DrawandGuess.self, Player.class).getBytes();
             try {
                 socket.send(new DatagramPacket(out, out.length, DrawandGuess.currentRoom.getAddress()));

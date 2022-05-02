@@ -13,6 +13,7 @@ public class DrawandGuess {
     public static final Player self = new Player();
     public static final Room currentRoom = new Room();
     public static Gson gson = new GsonBuilder().serializeNulls().create();
+    public static final int PLAYER_TIMEOUT = 1500;
 
     public static void main(String[] args) {
         WhiteBoardGUI.setUp();

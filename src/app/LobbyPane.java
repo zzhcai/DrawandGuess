@@ -61,7 +61,6 @@ public class LobbyPane extends JPanel {
                     DrawandGuess.currentRoom.numRounds = room.numRounds;
                     DrawandGuess.currentRoom.IP = room.IP;
                     DrawandGuess.currentRoom.port = room.port;
-                    DrawandGuess.currentRoom.playerList.add(DrawandGuess.self);
                 }
                 DrawandGuess.self.isHost = false;
                 thread.interrupted = true;
@@ -124,7 +123,6 @@ public class LobbyPane extends JPanel {
             DrawandGuess.currentRoom.host = DrawandGuess.self;
             DrawandGuess.currentRoom.roomName = roomName;
             DrawandGuess.currentRoom.maxPlayer = maxPlayerNum;
-            DrawandGuess.currentRoom.playerList.add(DrawandGuess.self);
             DrawandGuess.currentRoom.timeLimit = 0;
             DrawandGuess.currentRoom.numRounds = 0;
         }

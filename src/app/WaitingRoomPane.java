@@ -12,6 +12,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.*;
+import java.time.Instant;
 import java.util.ArrayList;
 
 public class WaitingRoomPane extends JPanel {
@@ -125,8 +126,6 @@ public class WaitingRoomPane extends JPanel {
         private volatile boolean isInterrupted = false;
         @Override
         public void run() {
-            ArrayList<Player> players;
-            ArrayList<String> words;
             boolean hasBecomeHost = false;
             while (!isInterrupted) {
                 synchronized (DrawandGuess.currentRoom) {
@@ -136,18 +135,18 @@ public class WaitingRoomPane extends JPanel {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    players = DrawandGuess.currentRoom.playerList;
-                    words = DrawandGuess.currentRoom.dictionary;
-                    if (!hasBecomeHost && DrawandGuess.currentRoom.host.equals(DrawandGuess.self)) {
+                    long now = Instant.now().toEpochMilli();
+                    DrawandGuess.currentRoom.playerList.removeIf(player -> now - player.lastActive > DrawandGuess.PLAYER_TIMEOUT);
+                    if (!hasBecomeHost && DrawandGuess.self.isHost) {
                         hasBecomeHost = true;
                         nameField.setEditable(true);
                         fileButton.setEnabled(true);
                     }
                 }
                 dlmPlayers.removeAllElements();
-                dlmPlayers.addAll(players);
+                dlmPlayers.addAll(DrawandGuess.currentRoom.playerList);
                 dlmWords.removeAllElements();
-                dlmWords.addAll(words);
+                dlmWords.addAll(DrawandGuess.currentRoom.dictionary);
                 nameField.setText(DrawandGuess.currentRoom.roomName);
             }
         }
