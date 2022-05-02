@@ -2,6 +2,7 @@ package app;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Random;
 
 public class Room{
@@ -9,34 +10,18 @@ public class Room{
     public InetSocketAddress address;
     public int port;
     public String roomName;
-    public int numPlayer;
     public int maxPlayer;
     public int timeLimit;
     public ArrayList<String> dictionary = new ArrayList<>();
     public ArrayList<Player> playerList = new ArrayList<>();
     public int numRounds;
 
-    public Room() {
-        this.port = new Random().nextInt(10000) + 9000;
-        this.address = new InetSocketAddress(randomIP(), port);
-        this.roomName = "someone's room";
-        this.numPlayer = 1;
-        this.maxPlayer = 10;
-    }
-
-    public Room(Player host, String roomName, int maxPlayer) {
+    public Room(Player host, String roomName,int maxPlayer) {
         this.port = new Random().nextInt(10000) + 9000;
         this.address = new InetSocketAddress(randomIP(), port);
         this.hostId = host.name;
         playerList.add(host);
         this.roomName = roomName;
-        this.numPlayer = 1;
-        this.maxPlayer = maxPlayer;
-    }
-
-    public Room(String roomName, int numPlayer, int maxPlayer) {
-        this.roomName = roomName;
-        this.numPlayer = numPlayer;
         this.maxPlayer = maxPlayer;
     }
 
@@ -54,7 +39,12 @@ public class Room{
     public String toString() {
         return "{roomid=" + hostId +
                 ", name=" + roomName +
-                ", numPlayer=" + numPlayer +
+                ", numPlayer=" + playerList.size() +
                 ", maxPlayer=" + maxPlayer + "}";
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(hostId);
     }
 }
