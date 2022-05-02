@@ -16,6 +16,7 @@ import java.awt.event.KeyListener;
 import java.io.*;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class WaitingRoomPane extends JPanel {
     private final DefaultListModel<Player> dlmPlayers = new DefaultListModel<>();
@@ -146,6 +147,7 @@ public class WaitingRoomPane extends JPanel {
                         nameField.setEditable(true);
                         fileButton.setEnabled(true);
                     }
+                    Collections.sort(DrawandGuess.currentRoom.playerList);
                 }
                 dlmPlayers.removeAllElements();
                 dlmPlayers.addAll(DrawandGuess.currentRoom.playerList);
