@@ -18,7 +18,7 @@ public class RoomRenderer extends JPanel implements ListCellRenderer<Room> {
         name.setBounds(30, 0, 200, 100);
         this.add(name);
 
-        JLabel num = new JLabel(value.numPlayer + "/" + value.maxPlayer, SwingConstants.RIGHT);
+        JLabel num = new JLabel(value.playerList.size() + "/" + value.maxPlayer, SwingConstants.RIGHT);
         num.setBounds(400, 0, 100, 100);
         this.add(num);
         Border blackLine = BorderFactory.createLineBorder(Color.black);

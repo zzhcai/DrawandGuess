@@ -27,7 +27,7 @@ public class WelcomePane extends JPanel {
                 int result = JOptionPane.showConfirmDialog(null, "Your name: " + name, "Title", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
                 if (result == 0) {
                     System.out.println("Name " + userName.getText());
-                    DrawandGuess.self = new Player(name);
+                    DrawandGuess.self.name = name;
                     WhiteBoardGUI.redirectTo(this, new LobbyPane());
                 } else {
                     System.out.println("Not submit");

@@ -10,15 +10,13 @@ public class DrawandGuess {
     public static final int LOBBY_PORT = 9000;
     public static final String LOBBY_ADDRESS = "239.255.255.255";
     public static final InetSocketAddress LOBBY_SOCKET_ADDRESS = new InetSocketAddress(LOBBY_ADDRESS, LOBBY_PORT);
-    public static Player self;
-    public static Room currentRoom;
-    protected static Gson gson = new GsonBuilder().serializeNulls().create();
+    public static final Player self = new Player();
+    public static final Room currentRoom = new Room();
+    public static Gson gson = new GsonBuilder().serializeNulls().create();
+    public static final int PLAYER_TIMEOUT = 1500;
+    public static final int ROOM_TIMEOUT = 1500;
 
-
-    public DrawandGuess() {
-    }
-
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         WhiteBoardGUI.setUp();
     }
 }

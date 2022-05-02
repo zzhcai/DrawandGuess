@@ -1,13 +1,19 @@
 package app;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Random;
 
+/**
+ * A room that keeps all the information of the game itself and all users inside.
+ * Its unique identifier is the current host's name, and it is the only thing considered when comparing rooms.
+ * The IP and port of a room should not change once decided, but in exchange for making the currentRoom object
+ * final in the main class, these two fields are not final here. DO NOT CHANGE THEM.
+ */
 public class Room{
-    public String hostId;
-    public InetSocketAddress address;
+    // The unique identifier of the room is its current host's ID.
+    public Player host;
+    public String IP;
     public int port;
     public String roomName;
     public int maxPlayer;
@@ -16,35 +22,34 @@ public class Room{
     public ArrayList<Player> playerList = new ArrayList<>();
     public int numRounds;
 
-    public Room(Player host, String roomName,int maxPlayer) {
+    public Room() {
         this.port = new Random().nextInt(10000) + 9000;
-        this.address = new InetSocketAddress(randomIP(), port);
-        this.hostId = host.name;
-        playerList.add(host);
-        this.roomName = roomName;
-        this.maxPlayer = maxPlayer;
+        this.IP = randomIP();
     }
 
-    private String randomIP() {
+    public String randomIP() {
         Random r = new Random();
         return (r.nextInt(15)+224) + "." + r.nextInt(256) + "." + r.nextInt(256) + "." + r.nextInt(256);
     }
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof Room && this.hostId.equals(((Room) o).hostId);
+        return o instanceof Room && this.host.name.equals(((Room) o).host.name);
     }
 
     @Override
     public String toString() {
-        return "{roomid=" + hostId +
+        return "{host=" + host.name +
                 ", name=" + roomName +
                 ", numPlayer=" + playerList.size() +
-                ", maxPlayer=" + maxPlayer + "}";
+                ", maxPlayer=" + maxPlayer +
+                ", address=" + IP + "port=" + port + "}";
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(hostId);
+        return Objects.hash(host.name);
     }
+
+    public InetSocketAddress getAddress() { return new InetSocketAddress(IP, port); }
 }
