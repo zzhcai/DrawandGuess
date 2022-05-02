@@ -23,6 +23,7 @@ public class WaitingRoomPane extends JPanel {
     private JScrollPane spWords = new JScrollPane(wordList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     private final JTextField nameField;
     private final JTextField numField;
+    private final JButton fileButton;
 
     public WaitingRoomPane() {
         super();
@@ -52,6 +53,7 @@ public class WaitingRoomPane extends JPanel {
         nameField = new JTextField();
         nameField.setText(DrawandGuess.currentRoom.roomName);
         nameField.setBounds(250, 50, 200, 30);
+        nameField.setEditable(false);
         nameField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
         JLabel numLabel = new JLabel("Max player num: ");
@@ -78,10 +80,11 @@ public class WaitingRoomPane extends JPanel {
         this.add(numLabel);
         this.add(numField);
 
-        JButton fileButton = new JButton("Choose vocabulary file");
+        fileButton = new JButton("Choose vocabulary file");
         fileButton.setBounds(150, 180, 250, 30);
         fileButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
-
+        // Only available for the host
+        fileButton.setEnabled(false);
         fileButton.addActionListener(e -> {
             JFileChooser addChooser = new JFileChooser(".");
             addChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -93,17 +96,16 @@ public class WaitingRoomPane extends JPanel {
             int returnVal = addChooser.showOpenDialog(null);
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
-                addDictionary(addChooser.getSelectedFile(), dlmWords);
+                addDictionary(addChooser.getSelectedFile());
             }
 
         });
 
         this.add(fileButton);
-
         new WaitingRoomMonitorThread().start();
     }
 //TODO change dictionary should be multicasted to all players within the room
-    public static void addDictionary(File file, DefaultListModel<String> dlmWords){
+    private void addDictionary(File file){
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String tempString;
             synchronized (DrawandGuess.currentRoom) {
@@ -125,6 +127,7 @@ public class WaitingRoomPane extends JPanel {
         public void run() {
             ArrayList<Player> players;
             ArrayList<String> words;
+            boolean hasBecomeHost = false;
             while (!isInterrupted) {
                 synchronized (DrawandGuess.currentRoom) {
                     // Wait until getting notified current room's changed
@@ -135,6 +138,11 @@ public class WaitingRoomPane extends JPanel {
                     }
                     players = DrawandGuess.currentRoom.playerList;
                     words = DrawandGuess.currentRoom.dictionary;
+                    if (!hasBecomeHost && DrawandGuess.currentRoom.host.equals(DrawandGuess.self)) {
+                        hasBecomeHost = true;
+                        nameField.setEditable(true);
+                        fileButton.setEnabled(true);
+                    }
                 }
                 dlmPlayers.removeAllElements();
                 dlmPlayers.addAll(players);

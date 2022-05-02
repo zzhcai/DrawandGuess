@@ -13,26 +13,35 @@ import java.util.Collections;
 
 public class PlayerAdvertiseThread extends Thread {
     public volatile boolean isInterrupted = false;
+
+    private int noHostCount = 0;
+    private final int MAX_NO_HOST_COUNT = 3;
+
     @Override
     public void run() {
         System.out.println("Player advertise thread started at " + DrawandGuess.currentRoom.getAddress());
-        ReliableMulticastSocket socket = MySocketFactory.newInstance(DrawandGuess.currentRoom.getAddress());
+        ReliableMulticastSocket socket = MySocketFactory.newInstance(null, DrawandGuess.currentRoom.port);
         while (!isInterrupted) {
             Collections.sort(DrawandGuess.currentRoom.playerList);
             // Check if it's time to become the new host
             synchronized (DrawandGuess.currentRoom) {
                 if (!DrawandGuess.currentRoom.playerList.contains(DrawandGuess.currentRoom.host)
                         && DrawandGuess.currentRoom.playerList.get(0).equals(DrawandGuess.self)) {
-                    synchronized (DrawandGuess.self) {
-                        DrawandGuess.self.isHost = true;
-                        DrawandGuess.self.notifyAll();
+                    noHostCount++;
+                    if (noHostCount >= MAX_NO_HOST_COUNT) {
+                        synchronized (DrawandGuess.self) {
+                            DrawandGuess.self.isHost = true;
+                            DrawandGuess.self.notifyAll();
+                        }
+                        DrawandGuess.currentRoom.host = DrawandGuess.self;
+                        DrawandGuess.currentRoom.notifyAll();
                     }
-                }
+                } else noHostCount = 0;
             }
             byte[] out = DrawandGuess.gson.toJson(DrawandGuess.self, Player.class).getBytes();
             try {
                 socket.send(new DatagramPacket(out, out.length, DrawandGuess.currentRoom.getAddress()));
-                System.out.println("sent at room: " + Arrays.toString(out));
+                System.out.println("sent at room: " + DrawandGuess.self);
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -24,11 +24,11 @@ public class LobbyReceiveThread extends Thread {
 
     public LobbyReceiveThread(ConcurrentMap<Room, Instant> roomsLastUpdated) {
         this.roomsLastUpdated = roomsLastUpdated;
-        socket = MySocketFactory.newInstance(DrawandGuess.LOBBY_SOCKET_ADDRESS);
+        socket = MySocketFactory.newInstance(DrawandGuess.LOBBY_ADDRESS, DrawandGuess.LOBBY_PORT);
     }
 
     public void run() {
-        System.out.println("Lobby receive thread started");
+        System.out.println("Lobby receive thread started at: " + socket);
         while (!interrupted) {
             DatagramPacket p = new DatagramPacket(new byte[65507], 65507);
             socket.receive(p);

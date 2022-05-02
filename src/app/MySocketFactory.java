@@ -6,18 +6,20 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class MySocketFactory {
-    public static ReliableMulticastSocket newInstance(InetSocketAddress groupAddress) {
+    /**
+     * Construct a reliable multicast socket and join a specified multicast group.
+     * If this socket joins any other multicast group, the port number of that group MUST match with this socket's port.
+     * @param IP Inet address of the multicast group to join. If left null, this socket won't join any group.
+     * @param port The port number of this Socket. Any multicast groups this socket joins in the future must share the
+     *             same port number.
+     */
+    public static ReliableMulticastSocket newInstance(String IP, int port) {
         ReliableMulticastSocket socket = null;
-        int port = 9000;
-        while (true) {
-            try {
-                socket = new ReliableMulticastSocket(port);
-                socket.joinGroup(groupAddress, null);
-                break;
-            } catch (IOException e) {
-                if (socket == null) port++;
-                else break;// Joining the same group, nothing to worry about
-            }
+        try {
+            socket = new ReliableMulticastSocket(port);
+            if (IP != null) socket.joinGroup(new InetSocketAddress(IP, port), null);
+        } catch (IOException e) {
+            System.err.println("Joining an already joined group.");// Nothing to worry about.
         }
         return socket;
     }

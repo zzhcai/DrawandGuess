@@ -14,8 +14,8 @@ public class RoomReceiveThread extends Thread {
     public volatile boolean interrupted = false;
     @Override
     public void run() {
-        ReliableMulticastSocket socket = MySocketFactory.newInstance(DrawandGuess.currentRoom.getAddress());
-        System.out.println("Room receive thread started at " + DrawandGuess.currentRoom.getAddress());
+        ReliableMulticastSocket socket = MySocketFactory.newInstance(DrawandGuess.currentRoom.IP, DrawandGuess.currentRoom.port);
+        System.out.println("Room receive thread started at " + socket.getInetAddress());
         while (!interrupted) {
             DatagramPacket p = new DatagramPacket(new byte[65507], 65507);
             socket.receive(p);
