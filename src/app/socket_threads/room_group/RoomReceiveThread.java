@@ -30,6 +30,7 @@ public class RoomReceiveThread extends Thread {
                     DrawandGuess.currentRoom.host = room.host;
                     DrawandGuess.currentRoom.numRounds = room.numRounds;
                     DrawandGuess.currentRoom.timeLimit = room.timeLimit;
+                    DrawandGuess.currentRoom.playerList = room.playerList;
                     DrawandGuess.currentRoom.notifyAll();
                 }
             } else {
