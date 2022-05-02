@@ -12,6 +12,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.*;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 
 public class WaitingRoomPane extends JPanel {
@@ -24,12 +25,15 @@ public class WaitingRoomPane extends JPanel {
     private final JTextField nameField;
     private final JTextField numField;
     private final JButton fileButton;
+    private final JButton prepareStartButton;
 
     public WaitingRoomPane() {
         super();
         this.setLayout(null);
 
-        new InLobbyAdvertiseThread().start();
+        WaitingRoomMonitorThread monitorThread = new WaitingRoomMonitorThread();
+        InLobbyAdvertiseThread inLobbyAdvertiseThread = new InLobbyAdvertiseThread();
+        inLobbyAdvertiseThread.start();
         new InRoomAdvertiseThread().start();
         new InRoomReceiveThread().start();
 
@@ -101,9 +105,24 @@ public class WaitingRoomPane extends JPanel {
             }
 
         });
-
         this.add(fileButton);
-        new WaitingRoomMonitorThread().start();
+
+        prepareStartButton = new JButton("Prepare");
+        prepareStartButton.setBounds(700, 50, 100, 30);
+        prepareStartButton.setEnabled(false);
+        prepareStartButton.addActionListener(e -> {
+            prepareStartButton.setEnabled(false);
+            if (prepareStartButton.getText().equals("Start")) {
+                WhiteBoardGUI.redirectTo(this, new DrawPane());
+                inLobbyAdvertiseThread.isInterrupted = true;
+                monitorThread.isInterrupted = true;
+            }else
+                DrawandGuess.self.ready = !DrawandGuess.self.ready;
+            prepareStartButton.setEnabled(true);
+        });
+        this.add(prepareStartButton);
+
+        monitorThread.start();
     }
 
     private void addDictionary(File file){
@@ -130,8 +149,10 @@ public class WaitingRoomPane extends JPanel {
         private volatile boolean isInterrupted = false;
         @Override
         public void run() {
-            boolean hasBecomeHost = false;
             while (!isInterrupted) {
+                ArrayList<Player> players;
+                ArrayList<String> words;
+                boolean canStart = true;
                 synchronized (DrawandGuess.currentRoom) {
                     // Wait until getting notified current room's changed
                     try {
@@ -140,19 +161,29 @@ public class WaitingRoomPane extends JPanel {
                         e.printStackTrace();
                     }
                     long now = Instant.now().toEpochMilli();
-                    DrawandGuess.currentRoom.playerList.removeIf(player -> now - player.lastActive > DrawandGuess.PLAYER_TIMEOUT);
-                    if (!hasBecomeHost && DrawandGuess.self.isHost) {
-                        hasBecomeHost = true;
+                    for (Player player: DrawandGuess.currentRoom.playerList) {
+                        if (now - player.lastActive > DrawandGuess.PLAYER_TIMEOUT) DrawandGuess.currentRoom.playerList.remove(player);
+                        if (!player.ready) canStart = false;
+                    }
+                    players = DrawandGuess.currentRoom.playerList;
+                    words = DrawandGuess.currentRoom.dictionary;
+                }
+                Collections.sort(players);
+                dlmPlayers.removeAllElements();
+                dlmPlayers.addAll(players);
+                dlmWords.removeAllElements();
+                dlmWords.addAll(words);
+                synchronized (DrawandGuess.self) {
+                    if (DrawandGuess.self.isHost) {
                         nameField.setEditable(true);
                         fileButton.setEnabled(true);
+                        prepareStartButton.setText("Start");
+                        prepareStartButton.setEnabled(canStart && players.size() >= 3);
+                    } else {
+                        nameField.setText(DrawandGuess.currentRoom.roomName);
+                        prepareStartButton.setEnabled(true);
                     }
-                    Collections.sort(DrawandGuess.currentRoom.playerList);
                 }
-                dlmPlayers.removeAllElements();
-                dlmPlayers.addAll(DrawandGuess.currentRoom.playerList);
-                dlmWords.removeAllElements();
-                dlmWords.addAll(DrawandGuess.currentRoom.dictionary);
-                if (!hasBecomeHost) nameField.setText(DrawandGuess.currentRoom.roomName);
             }
         }
     }

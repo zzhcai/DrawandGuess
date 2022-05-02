@@ -26,6 +26,8 @@ public class PlayerRenderer extends JPanel implements ListCellRenderer<Player> {
             ready.setText("not ready");
         }
 
+        if (value.isHost) setBackground(Color.yellow);
+
         this.add(ready);
 
         Border blackLine = BorderFactory.createLineBorder(Color.black);

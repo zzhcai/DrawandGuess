@@ -40,6 +40,7 @@ public class InRoomAdvertiseThread extends Thread {
                 if (noHostCount >= MAX_NO_HOST_COUNT) {
                     synchronized (DrawandGuess.self) {
                         DrawandGuess.self.isHost = true;
+                        DrawandGuess.self.ready = true;
                         DrawandGuess.self.notifyAll();
                     }
                     synchronized (DrawandGuess.currentRoom) {
@@ -69,11 +70,6 @@ public class InRoomAdvertiseThread extends Thread {
             }
         }
         System.out.println("Player advertise thread closed");
-        try {
-            socket.leaveGroup(DrawandGuess.currentRoom.getAddress(), null);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         socket.close();
     }
 }
