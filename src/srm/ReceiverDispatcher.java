@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.AbstractMap;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 
 /**
@@ -147,10 +149,14 @@ public class ReceiverDispatcher extends Thread
 			String whose_seq = new String(msg.getBody());
 			if (!socket.pool.repairs.containsKey(whose_seq))
 			{
-				if (!socket.pool.requests.containsKey(whose_seq)) {
-					socket.pool.repair(whose_seq);
+				if (socket.pool.requests.containsKey(whose_seq)) {
+					socket.pool.postponeRequest(whose_seq);
+					// Tell duplicates
+					AbstractMap.SimpleEntry<RequestRepairPool.RequestTask, Future<?>> pair =
+							socket.pool.requests.get(whose_seq);
+					if (pair != null) pair.getKey().req_dup ++;
 				}
-				else socket.pool.postponeRequest(whose_seq);
+				else socket.pool.repair(whose_seq);
 			}
 		}
 

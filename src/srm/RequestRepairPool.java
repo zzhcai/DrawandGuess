@@ -31,9 +31,8 @@ public class RequestRepairPool
 	// TODO: adaptive
 	private double C1 = 2;
 	private double C2 = 2;
-	private double D1, D2;
 
-	private class RequestTask implements Runnable
+	protected class RequestTask implements Runnable
 	{
 		/** Turned on before stopping the thread via interrupt */
 		boolean doneFlag = false;
@@ -43,6 +42,7 @@ public class RequestRepairPool
 		long i = 0;
 		final DatagramPacket p;
 		final String whose;
+		int req_dup;
 
 		public RequestTask(DatagramPacket p, String whose) {
 			this.p = p;
@@ -55,6 +55,7 @@ public class RequestRepairPool
 			startedFlag = true;
 			while (true) {
 				start = LocalTime.now();
+				req_dup = 0;
 				try {
 					StateTable.State s = socket.states.get(whose);
 					if (s != null && s.dist() != null) {
@@ -65,11 +66,13 @@ public class RequestRepairPool
 					Thread.sleep(expire);
 					socket._send(p);
 					ReliableMulticastSocket.logger.info("Multicasting REQUEST.");
+					// TODO: update ave dup req, C1, C2
 				}
 				catch (IOException e) {
 					e.printStackTrace();
 				}
 				catch (InterruptedException e) {
+					// TODO: update ave req delay
 					if (doneFlag) break;
 				}
 			}
@@ -78,10 +81,12 @@ public class RequestRepairPool
 
 	private class RepairTask implements Runnable
 	{
-		static boolean firstRepair = true;
 		boolean startedFlag = false;
 		final DatagramPacket p;
 		final String whose_seq;
+
+		double D1 = Math.log(socket.states.getViewingPage().size());
+		double D2 = D1;
 
 		public RepairTask(DatagramPacket p, String whose_seq) {
 			this.p = p;
@@ -101,6 +106,7 @@ public class RequestRepairPool
 				Thread.sleep(expire);
 				socket._send(p);
 				ReliableMulticastSocket.logger.info("Multicasting REPAIR.");
+				repairs.remove(whose_seq);
 			}
 			catch (IOException e) {
 				e.printStackTrace();
@@ -143,12 +149,6 @@ public class RequestRepairPool
 		else if (s != null && s.dist() != null &&
 				ChronoUnit.MILLIS.between(pair.getValue(), LocalTime.now()) < 3 * s.dist()) return;
 
-		// Initialize D1, D2 with group size G
-		if (RepairTask.firstRepair) {
-			RepairTask.firstRepair = false;
-			D1 = Math.log(socket.states.getViewingPage().size());
-			D2 = D1;
-		}
 		Message repair = new Message(socket.sequencer, socket.getFrom(), Type.REPAIR,
 				ReliableMulticastSocket.gson.toJson(new Message.RepairBody(
 						whose_seq, pair.getKey())).getBytes());
