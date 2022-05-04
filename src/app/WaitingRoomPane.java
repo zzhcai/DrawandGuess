@@ -110,6 +110,7 @@ public class WaitingRoomPane extends JPanel {
         prepareStartButton = new JButton("Prepare");
         prepareStartButton.setBounds(700, 50, 100, 30);
         prepareStartButton.setEnabled(false);
+        prepareStartButton.setToolTipText("Need at least 3 players to start game.");
         prepareStartButton.addActionListener(e -> {
             prepareStartButton.setEnabled(false);
             if (prepareStartButton.getText().equals("Start")) {

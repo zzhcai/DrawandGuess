@@ -9,6 +9,7 @@ import srm.ReliableMulticastSocket;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.time.Instant;
+import java.util.Collections;
 
 /**
  * This thread receives all incoming messages within the room.
@@ -43,6 +44,7 @@ public class InRoomReceiveThread extends Thread {
                 synchronized (DrawandGuess.currentRoom) {
                     DrawandGuess.currentRoom.playerList.remove(player);
                     DrawandGuess.currentRoom.playerList.add(player);
+                    Collections.sort(DrawandGuess.currentRoom.playerList);
                     DrawandGuess.currentRoom.notifyAll();
                 }
             }
