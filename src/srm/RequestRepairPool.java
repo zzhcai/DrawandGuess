@@ -28,13 +28,8 @@ public class RequestRepairPool
 		this.socket = socket;
 	}
 
-	// TODO: adaptive
 	private double C1 = 2;
 	private double C2 = 2;
-	private final double AveDups = 1;
-	private final long AveDelay = 1;
-	private final double alpha = 0.25;
-	private final double epsilon = 0.1;
 	private Double ave_dup_req = null;
 	private Double ave_req_delay = null;
 
@@ -43,14 +38,22 @@ public class RequestRepairPool
 		/** Turned on before stopping the thread via interrupt */
 		boolean doneFlag = false;
 		boolean startedFlag = false;
-		LocalTime start;
+		LocalTime round_start;
 		long expire;   // in milliseconds
 		long i = 0;
 		final DatagramPacket p;
 		final String whose;
 
-		int req_dup;
+		static final double AveDups = 1;
+		static final long AveDelay = 1;
+		static final double alpha = 0.25;
+		static final double epsilon = 0.1;
+
+		LocalTime task_start;
+		int req_dup = -1;
 		long min_dist;
+		int n_send = 0;
+
 		StateTable.State current_state;
 		Long my_dist;
 		public RequestTask(DatagramPacket p, String whose) {
@@ -62,9 +65,9 @@ public class RequestRepairPool
 		public void run()
 		{
 			startedFlag = true;
+			task_start = LocalTime.now();
 			while (true) {
-				start = LocalTime.now();
-				req_dup = 0;
+				round_start = LocalTime.now();
 				min_dist = Long.MAX_VALUE;
 				try {
 					StateTable.State s = socket.states.get(whose);
@@ -76,11 +79,16 @@ public class RequestRepairPool
 					Thread.sleep(expire);
 					socket._send(p);
 					ReliableMulticastSocket.logger.info("Multicasting REQUEST.");
-					// After sending a request
-					C1 -= 0.1;
+
+					n_send ++;
+					req_dup ++;
 					// Update ave_dup_req
 					if (ave_dup_req == null) ave_dup_req = (double) req_dup;
-					else ave_dup_req = (1-alpha) * ave_dup_req + alpha * (double) req_dup;
+					else ave_dup_req = (1 - alpha) * ave_dup_req + alpha * req_dup;
+					req_dup = -1;
+
+					// After sending a request
+					C1 -= 0.1;
 					// Before each new request timer is set
 					current_state = socket.states.get(whose);
 					my_dist = current_state != null ? current_state.dist() : null;
@@ -104,14 +112,18 @@ public class RequestRepairPool
 					e.printStackTrace();
 				}
 				catch (InterruptedException e) {
-					// Update ave_req_delay
-					if (ave_req_delay == null) {
-						ave_req_delay = (double) ChronoUnit.MILLIS.between(start, LocalTime.now());
-					} else {
-						ave_req_delay = (1-alpha) * ave_req_delay +
-								alpha * (double) ChronoUnit.MILLIS.between(start, LocalTime.now());
+					if (doneFlag) {
+						if (n_send > 0) {
+							double req_delay = (double) ChronoUnit.MILLIS.between(task_start, LocalTime.now()) / n_send;
+							// Update ave_req_delay
+							if (ave_req_delay == null) {
+								ave_req_delay = req_delay;
+							} else {
+								ave_req_delay = (1 - alpha) * ave_req_delay + alpha * req_delay;
+							}
+						}
+						break;
 					}
-					if (doneFlag) break;
 				}
 			}
 		}
@@ -214,8 +226,8 @@ public class RequestRepairPool
 		if (pair == null) return;
 		RequestTask task = pair.getKey();
 		Future<?> f = requests.get(whose_seq).getValue();
-		if (task != null && f != null && task.startedFlag &&
-				ChronoUnit.MILLIS.between(task.start, LocalTime.now()) > task.expire / 2) {
+		if (task != null && f != null &&
+				ChronoUnit.MILLIS.between(task.round_start, LocalTime.now()) > task.expire / 2) {
 			f.cancel(true);   // with done set false
 			ReliableMulticastSocket.logger.info("Request timer <"+whose_seq+"> is postponed.");
 		}
