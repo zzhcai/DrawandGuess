@@ -121,6 +121,8 @@ public class RequestRepairPool
 							} else {
 								ave_req_delay = (1 - alpha) * ave_req_delay + alpha * req_delay;
 							}
+							ReliableMulticastSocket.logger.info("ave_req_delay gets updated to "+ave_req_delay+".");
+							ReliableMulticastSocket.logger.info("ave_dup_req gets updated to "+ave_dup_req+".");
 						}
 						break;
 					}
