@@ -31,6 +31,12 @@ public class RequestRepairPool
 	// TODO: adaptive
 	private double C1 = 2;
 	private double C2 = 2;
+	private final double AveDups = 1;
+	private final long AveDelay = 1;
+	private final double alpha = 0.25;
+	private final double epsilon = 0.1;
+	private Double ave_dup_req = null;
+	private Double ave_req_delay = null;
 
 	protected class RequestTask implements Runnable
 	{
@@ -45,7 +51,8 @@ public class RequestRepairPool
 
 		int req_dup;
 		long min_dist;
-
+		StateTable.State current_state;
+		Long my_dist;
 		public RequestTask(DatagramPacket p, String whose) {
 			this.p = p;
 			this.whose = whose;
@@ -69,14 +76,42 @@ public class RequestRepairPool
 					Thread.sleep(expire);
 					socket._send(p);
 					ReliableMulticastSocket.logger.info("Multicasting REQUEST.");
-					// TODO: update ave dup req, C1, C2
+					// After sending a request
+					C1 -= 0.1;
+					// Update ave_dup_req
+					if (ave_dup_req == null) ave_dup_req = (double) req_dup;
+					else ave_dup_req = (1-alpha) * ave_dup_req + alpha * (double) req_dup;
+					// Before each new request timer is set
+					current_state = socket.states.get(whose);
+					my_dist = current_state != null ? current_state.dist() : null;
+					if (my_dist != null && my_dist < min_dist) {
+						C2 -= 0.1;
+					} else if (ave_dup_req >= AveDups) {
+						C1 += 0.1;
+						C2 += 0.5;
+					} else if (ave_dup_req < AveDups - epsilon) {
+						if (ave_req_delay > AveDelay) {
+							C2 -= 0.1;
+						}
+						if (ave_dup_req < 0.25) {
+							C1 -= 0.05;
+						}
+					} else {
+						C1 += 0.05;
+					}
 				}
 				catch (IOException e) {
 					e.printStackTrace();
 				}
 				catch (InterruptedException e) {
+					// Update ave_req_delay
+					if (ave_req_delay == null) {
+						ave_req_delay = (double) ChronoUnit.MILLIS.between(start, LocalTime.now());
+					} else {
+						ave_req_delay = (1-alpha) * ave_req_delay +
+								alpha * (double) ChronoUnit.MILLIS.between(start, LocalTime.now());
+					}
 					if (doneFlag) break;
-					// TODO: update ave req delay
 				}
 			}
 		}
