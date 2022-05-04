@@ -143,18 +143,34 @@ public class ReceiverDispatcher extends Thread
 		}
 
 		// 1. If repair in pool, stop and do nothing
-		// 2. Postpone a request in pool if there is
+		// 2. Attempt to postpone a request in pool if there is; and update dup count and closest distance
 		// 3. Otherwise, if DATA payload found in cache, submit REPAIR via pool
 		case REQUEST -> {
-			String whose_seq = new String(msg.getBody());
+			String whose_seq;
+			Long distToSrc;
+			try {
+				Message.RequestBody body = ReliableMulticastSocket.gson.fromJson(
+						new String(msg.getBody()), Message.RequestBody.class);
+				if (body != null && body.whose_seq != null) {
+					whose_seq = body.whose_seq;
+					distToSrc = body.distToSrc;
+				}
+				else return;
+			}
+			catch (JsonSyntaxException e) { return; }
+
 			if (!socket.pool.repairs.containsKey(whose_seq))
 			{
 				if (socket.pool.requests.containsKey(whose_seq)) {
 					socket.pool.postponeRequest(whose_seq);
-					// Tell duplicates
 					AbstractMap.SimpleEntry<RequestRepairPool.RequestTask, Future<?>> pair =
 							socket.pool.requests.get(whose_seq);
-					if (pair != null) pair.getKey().req_dup ++;
+					if (pair != null) {
+						pair.getKey().req_dup ++;   // Tell duplicates
+						if (distToSrc != null) {    // Update closest distance
+							pair.getKey().min_dist = Math.min(pair.getKey().min_dist, distToSrc);
+						}
+					}
 				}
 				else socket.pool.repair(whose_seq);
 			}

@@ -42,7 +42,9 @@ public class RequestRepairPool
 		long i = 0;
 		final DatagramPacket p;
 		final String whose;
+
 		int req_dup;
+		long min_dist;
 
 		public RequestTask(DatagramPacket p, String whose) {
 			this.p = p;
@@ -56,6 +58,7 @@ public class RequestRepairPool
 			while (true) {
 				start = LocalTime.now();
 				req_dup = 0;
+				min_dist = Long.MAX_VALUE;
 				try {
 					StateTable.State s = socket.states.get(whose);
 					if (s != null && s.dist() != null) {
@@ -72,8 +75,8 @@ public class RequestRepairPool
 					e.printStackTrace();
 				}
 				catch (InterruptedException e) {
-					// TODO: update ave req delay
 					if (doneFlag) break;
+					// TODO: update ave req delay
 				}
 			}
 		}
@@ -125,7 +128,11 @@ public class RequestRepairPool
 	protected void request(String whose_seq)
 	{
 		String whose = whose_seq.split("-")[0];
-		Message request = new Message(socket.sequencer, socket.getFrom(), Type.REQUEST, whose_seq.getBytes());
+		StateTable.State s = socket.states.get(whose);
+		Long distToSrc = s != null ? s.dist() : null;
+		Message request = new Message(socket.sequencer, socket.getFrom(), Type.REQUEST,
+				ReliableMulticastSocket.gson.toJson(new Message.RequestBody(
+						whose_seq, distToSrc)).getBytes());
 		byte[] out = ReliableMulticastSocket.gson.toJson(request).getBytes();
 		DatagramPacket p = new DatagramPacket(out, out.length, socket.getGroup(), socket.getLocalPort());
 
