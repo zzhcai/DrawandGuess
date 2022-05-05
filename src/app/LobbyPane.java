@@ -109,12 +109,12 @@ public class LobbyPane extends JPanel {
                     JOptionPane.QUESTION_MESSAGE);
         if (roomName == null) return;
 
-        Integer maxPlayerNum = (Integer) JOptionPane.showInputDialog(this,
-                    "Select max player number",
+        Integer maxDrawTime = (Integer) JOptionPane.showInputDialog(this,
+                    "Select max drawing time",
                     "Create room",
                     JOptionPane.QUESTION_MESSAGE, null,
-                    new Object[]{3, 4, 5, 6, 7, 8, 9, 10}, 3);
-        if (maxPlayerNum == null) return;
+                    new Object[]{30, 45, 60, 75, 90}, 30);
+        if (maxDrawTime == null) return;
 
         DrawandGuess.self.isHost = true;
         DrawandGuess.self.ready = true;
@@ -122,8 +122,7 @@ public class LobbyPane extends JPanel {
         synchronized (DrawandGuess.currentRoom) {
             DrawandGuess.currentRoom.host = DrawandGuess.self;
             DrawandGuess.currentRoom.roomName = roomName;
-            DrawandGuess.currentRoom.maxPlayer = maxPlayerNum;
-            DrawandGuess.currentRoom.timeLimit = 0;
+            DrawandGuess.currentRoom.timeLimit = maxDrawTime;
             DrawandGuess.currentRoom.numRounds = 0;
         }
         WhiteBoardGUI.redirectTo(this, new WaitingRoomPane());
@@ -138,7 +137,6 @@ public class LobbyPane extends JPanel {
             synchronized (DrawandGuess.currentRoom) {
                 DrawandGuess.currentRoom.host = room.host;
                 DrawandGuess.currentRoom.roomName = room.roomName;
-                DrawandGuess.currentRoom.maxPlayer = room.maxPlayer;
                 DrawandGuess.currentRoom.timeLimit = room.timeLimit;
                 DrawandGuess.currentRoom.numRounds = room.numRounds;
                 DrawandGuess.currentRoom.IP = room.IP;

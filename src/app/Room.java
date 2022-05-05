@@ -16,7 +16,6 @@ public class Room{
     public String IP;
     public int port;
     public String roomName;
-    public int maxPlayer;
     public int timeLimit;
     public ArrayList<String> dictionary = new ArrayList<>();
     public ArrayList<Player> playerList = new ArrayList<>();
@@ -42,7 +41,7 @@ public class Room{
         return "{host=" + host.name +
                 ", name=" + roomName +
                 ", numPlayer=" + playerList.size() +
-                ", maxPlayer=" + maxPlayer +
+                ", maxTime=" + timeLimit +
                 ", address=" + IP + "port=" + port + "}";
     }
 

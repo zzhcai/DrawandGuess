@@ -61,7 +61,7 @@ public class WaitingRoomPane extends JPanel {
         nameField.setToolTipText("Press enter to confirm name change");
         nameField.addActionListener(e -> DrawandGuess.currentRoom.roomName = nameField.getText());
 
-        JLabel numLabel = new JLabel("Max player num: ");
+        JLabel numLabel = new JLabel("Max draw time: ");
         numLabel.setBounds(100, 110, 150, 30);
 
         // Format numField so that only 1 to 10 players are allowed.
@@ -71,12 +71,11 @@ public class WaitingRoomPane extends JPanel {
 //        formatter.setMaximum(10);
 //        formatter.setAllowsInvalid(false);
 //        JFormattedTextField numField = new JFormattedTextField(formatter);
-        numField = new JTextField(DrawandGuess.currentRoom.maxPlayer);
+        numField = new JTextField(Integer.toString(DrawandGuess.currentRoom.timeLimit));
         numField.setEditable(false);
         numField.setBounds(250, 110, 200, 30);
         numField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
-        numField.setText(String.valueOf(DrawandGuess.currentRoom.maxPlayer));
         numField.setBounds(250, 110, 200, 30);
         numField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
@@ -110,7 +109,7 @@ public class WaitingRoomPane extends JPanel {
         prepareStartButton = new JButton("Prepare");
         prepareStartButton.setBounds(700, 50, 100, 30);
         prepareStartButton.setEnabled(false);
-        prepareStartButton.setToolTipText("Need at least 3 players to start game.");
+        prepareStartButton.setToolTipText("Need at least 3 players and words to start game.");
         prepareStartButton.addActionListener(e -> {
             prepareStartButton.setEnabled(false);
             if (prepareStartButton.getText().equals("Start")) {
@@ -179,7 +178,7 @@ public class WaitingRoomPane extends JPanel {
                         nameField.setEditable(true);
                         fileButton.setEnabled(true);
                         prepareStartButton.setText("Start");
-                        prepareStartButton.setEnabled(canStart && players.size() >= 3);
+                        prepareStartButton.setEnabled(canStart && players.size() >= 3 && words.size() >= 3);
                     } else {
                         nameField.setText(DrawandGuess.currentRoom.roomName);
                         prepareStartButton.setEnabled(true);
