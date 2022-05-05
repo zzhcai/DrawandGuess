@@ -22,6 +22,7 @@ public class PlayerRenderer extends JPanel implements ListCellRenderer<Player> {
         ready.setBounds(300, 0, 100, 100);
         if (value.ready) {
             ready.setText("ready");
+            setBackground(Color.green);
         } else {
             ready.setText("not ready");
         }
