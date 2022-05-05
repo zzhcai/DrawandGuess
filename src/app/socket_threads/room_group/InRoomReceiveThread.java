@@ -68,6 +68,15 @@ public class InRoomReceiveThread extends Thread {
                     DrawandGuess.currentRoom.notifyAll();
                 }
             }
+            if (DrawandGuess.currentRoom.allDone(DrawandGuess.turn)) {
+                // even turn guess
+                if (DrawandGuess.turn % 2 == 0) {
+                    WhiteBoardGUI.moveFromWait(WhiteBoardGUI.drawPane);
+                } else {
+                    WhiteBoardGUI.moveFromWait(WhiteBoardGUI.guessPane);
+                }
+                DrawandGuess.turn++;
+            }
         }
         System.out.println("Room receive thread closed");
         try {

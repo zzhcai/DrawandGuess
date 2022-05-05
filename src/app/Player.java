@@ -1,6 +1,8 @@
 package app;
 
 
+import app.UI_util.ColorLine;
+
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -17,7 +19,7 @@ public class Player implements Comparable<Player> {
     // This field is actively added when this player object is received as a multicast message.
     public Long lastActive;
     public ArrayList<String> guessedList = new ArrayList<>();
-    public ArrayList<ArrayList<ArrayList<ColorPoint>>> drawingList = new ArrayList<>();
+    public ArrayList<ArrayList<ColorLine>> drawingList = new ArrayList<>();
     public boolean inGame = false;
 
     @Override

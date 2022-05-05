@@ -19,14 +19,29 @@ public class WhiteBoardGUI {
         frame.setSize(1200, 800);
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        frame.add(new WelcomePane());
-        frame.add(new GuessPane());
+        frame.add(new WelcomePane());
+//        frame.add(new DrawPane());
         frame.setVisible(true);
     }
 
     public static void redirectTo(JPanel oldPane, JPanel nextPane) {
         frame.remove(oldPane);
         frame.add(nextPane);
+        frame.validate();
+    }
+
+    public static void moveToWait(JPanel oldPane) {
+        frame.remove(oldPane);
+        wait = new WaitingPane();
+        frame.add(wait);
+        frame.validate();
+    }
+
+    public static void moveFromWait(JPanel newPane) {
+        frame.remove(wait);
+        drawPane = new DrawPane();
+        guessPane = new GuessPane();
+        frame.add(newPane);
         frame.validate();
     }
 

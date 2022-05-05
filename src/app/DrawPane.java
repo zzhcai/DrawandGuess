@@ -1,6 +1,6 @@
 package app;
 
-import app.UI_util.MyMouseAdapter;
+import app.UI_util.ColorLine;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,10 +13,12 @@ public class DrawPane extends JPanel {
     private ArrayList<ColorPoint> points;
     private ArrayList<ArrayList<ColorPoint>> pointLines;
     private ArrayList<ArrayList<ColorPoint>> lastLines;
+    private ArrayList<ColorLine> lines = new ArrayList<>();
+    private ArrayList<ColorLine> removedLines = new ArrayList<>();
     private int size = 20;
     private Color color = Color.blue;
     private boolean rubber = false;
-    private final int ver = 2;
+    private final int ver = 3;
     private Image mouse;
     private Toolkit tk;
     private Cursor cu;
@@ -57,12 +59,11 @@ public class DrawPane extends JPanel {
         });
 
         submitButton.addActionListener(e -> {
-            DrawandGuess.self.drawingList.add(pointLines);
-            WhiteBoardGUI.redirectTo(this, WhiteBoardGUI.wait);
+            DrawandGuess.self.drawingList.add(lines);
+            WhiteBoardGUI.moveToWait(this);
         });
 
         this.add(submitButton);
-
 
         if (ver != 0) {
             pointLines = new ArrayList<>();
@@ -114,21 +115,39 @@ public class DrawPane extends JPanel {
             });
 
             backButton.addActionListener(e -> {
-                lastLines.add(pointLines.get(pointLines.size()-1));
-                pointLines.remove(pointLines.size()-1);
-                nextButton.setEnabled(true);
-                if (pointLines.size() <= 0) {
-                    backButton.setEnabled(false);
+                if (ver == 3) {
+                    removedLines.add(lines.get(lines.size()-1));
+                    lines.remove(lines.size()-1);
+                    nextButton.setEnabled(true);
+                    if (lines.size() <= 0) {
+                        backButton.setEnabled(false);
+                    }
+                } else {
+                    lastLines.add(pointLines.get(pointLines.size()-1));
+                    pointLines.remove(pointLines.size()-1);
+                    nextButton.setEnabled(true);
+                    if (pointLines.size() <= 0) {
+                        backButton.setEnabled(false);
+                    }
                 }
                 repaint();
             });
 
             nextButton.addActionListener(e -> {
-                pointLines.add(lastLines.get(lastLines.size()-1));
-                lastLines.remove(lastLines.size()-1);
-                backButton.setEnabled(true);
-                if (lastLines.size() <= 0) {
-                    nextButton.setEnabled(false);
+                if (ver == 3) {
+                    lines.add(removedLines.get(removedLines.size()-1));
+                    removedLines.remove(removedLines.size()-1);
+                    backButton.setEnabled(true);
+                    if (removedLines.size() <= 0) {
+                        nextButton.setEnabled(false);
+                    }
+                } else {
+                    pointLines.add(lastLines.get(lastLines.size()-1));
+                    lastLines.remove(lastLines.size()-1);
+                    backButton.setEnabled(true);
+                    if (lastLines.size() <= 0) {
+                        nextButton.setEnabled(false);
+                    }
                 }
                 repaint();
             });
@@ -139,11 +158,19 @@ public class DrawPane extends JPanel {
                     super.mousePressed(e);
                     x = e.getX() - size/2;
                     y = e.getY() - size/2;
-                    pointLines.add(new ArrayList<>());
-                    pointLines.get(pointLines.size()-1).add(new ColorPoint(x, y, size, color.getRGB()));
+                    if (ver == 3) {
+                        lines.add(new ColorLine(size, color.getRGB()));
+                        lines.get(lines.size()-1).x.add(x);
+                        lines.get(lines.size()-1).y.add(y);
+                        removedLines.clear();
+                    } else {
+                        pointLines.add(new ArrayList<>());
+                        pointLines.get(pointLines.size()-1).add(new ColorPoint(x, y, size, color.getRGB()));
+                        lastLines.clear();
+                    }
                     backButton.setEnabled(true);
                     nextButton.setEnabled(false);
-                    lastLines.clear();
+
                     repaint();
                 }
             });
@@ -153,11 +180,15 @@ public class DrawPane extends JPanel {
                 public void mouseDragged(MouseEvent e) {
                     x = e.getX() - size/2;
                     y = e.getY() - size/2;
-                    pointLines.get(pointLines.size()-1).add(new ColorPoint(x, y, size, color.getRGB()));
+                    if (ver == 3) {
+                        lines.get(lines.size()-1).x.add(x);
+                        lines.get(lines.size()-1).y.add(y);
+                    } else {
+                        pointLines.get(pointLines.size()-1).add(new ColorPoint(x, y, size, color.getRGB()));
+                    }
                     repaint();
                 }
             });
-
 
 
             this.add(backButton);
@@ -272,7 +303,22 @@ public class DrawPane extends JPanel {
             g.drawOval(x, y, size, size);
         }
 
-        if (ver == 1) {
+        if (ver == 3) {
+            Graphics2D g2 = (Graphics2D) g;
+            for (ColorLine line: lines) {
+                g.setColor(line.getColor());
+                g2.setColor(line.getColor());
+                g2.setStroke(new BasicStroke((float) (line.size*0.85)));
+                for (int i = 0; i < line.x.size(); i++) {
+                    if (i != line.x.size()-1) {
+                        g2.drawLine(line.x.get(i) + line.size/2, line.y.get(i)+ line.size/2,
+                                line.x.get(i+1)+ line.size/2, line.y.get(i+1)+ line.size/2);
+                    }
+                    g.fillOval(line.x.get(i), line.y.get(i), line.size, line.size);
+                }
+            }
+
+        } else if (ver == 1) {
             Graphics2D g2 = (Graphics2D) g;
             for (ArrayList<ColorPoint> line: pointLines) {
                 if (line.size() > 1) {

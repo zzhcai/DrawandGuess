@@ -41,7 +41,7 @@ public class GuessPane extends JPanel {
             if (result == 0) {
                 System.out.println("Guessed " + guessWord.getText());
                 DrawandGuess.self.guessedList.add(guessWord.getText());
-                WhiteBoardGUI.redirectTo(this, WhiteBoardGUI.wait);
+                WhiteBoardGUI.moveToWait(this);
             } else {
                 System.out.println("Not submit");
             }
