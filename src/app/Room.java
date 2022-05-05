@@ -3,6 +3,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * A room that keeps all the information of the game itself and all users inside.
@@ -17,8 +18,8 @@ public class Room{
     public int port;
     public String roomName;
     public int timeLimit;
-    public ArrayList<String> dictionary = new ArrayList<>();
-    public ArrayList<Player> playerList = new ArrayList<>();
+    public CopyOnWriteArrayList<String> dictionary = new CopyOnWriteArrayList<>();
+    public CopyOnWriteArrayList<Player> playerList = new CopyOnWriteArrayList<>();
     public int numRounds;
 
     public Room() {
