@@ -36,7 +36,6 @@ public class InRoomReceiveThread extends Thread {
                     DrawandGuess.currentRoom.dictionary = room.dictionary;
                     DrawandGuess.currentRoom.host = room.host;
                     DrawandGuess.currentRoom.numRounds = room.numRounds;
-                    DrawandGuess.currentRoom.timeLimit = room.timeLimit;
                     DrawandGuess.currentRoom.notifyAll();
                 }
             } else {
