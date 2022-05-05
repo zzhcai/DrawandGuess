@@ -35,6 +35,20 @@ public class DrawPane extends JPanel {
 
         wordLabel = new JLabel();
         wordLabel.setBounds(550, 20, 200, 50);
+        if (DrawandGuess.turn > 1) {
+            synchronized (DrawandGuess.currentRoom) {
+                int index = DrawandGuess.currentRoom.playerList.indexOf(DrawandGuess.self);
+                int prevPlayer = DrawandGuess.currentRoom.playerList.size()-1;
+                if (index != 0) {
+                    prevPlayer = index - 1;
+                }
+//            JOptionPane.showConfirmDialog(null, DrawandGuess.currentRoom.playerList.get(prevPlayer)
+//                    .guessedList.get((DrawandGuess.turn)/2));
+//            wordLabel.setText("123");
+                wordLabel.setText("Prev player guessed: " + DrawandGuess.currentRoom.playerList.get(prevPlayer)
+                        .guessedList.get((DrawandGuess.turn)/2));
+            }
+        }
         this.add(wordLabel);
 
         submitButton = new JButton("submit");

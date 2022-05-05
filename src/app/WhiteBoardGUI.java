@@ -1,5 +1,6 @@
 package app;
 
+import app.UI_util.ColorLine;
 import app.UI_util.WaitingPane;
 
 import javax.swing.*;
@@ -49,7 +50,7 @@ public class WhiteBoardGUI {
         drawPane.setWord(word);
     }
 
-    public static void setPrevDraw(ArrayList<ArrayList<ColorPoint>> drawing) {
+    public static void setPrevDraw(ArrayList<ColorLine> drawing) {
         guessPane.setPrevDrawing(drawing);
     }
 }

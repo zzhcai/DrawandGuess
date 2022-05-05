@@ -1,5 +1,7 @@
 package app;
 
+import app.UI_util.ColorLine;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -9,7 +11,7 @@ import java.util.ArrayList;
 public class GuessPane extends JPanel {
     private JTextField guessWord;
     private JButton submitButton;
-    private ArrayList<ArrayList<ColorPoint>> prevDrawing;
+    private ArrayList<ColorLine> prevDrawing = new ArrayList<>();
 
     public GuessPane() {
         super();
@@ -53,26 +55,32 @@ public class GuessPane extends JPanel {
 
     public void paint(Graphics g) {
         super.paint(g);
-        if (prevDrawing != null) {
+        int index = DrawandGuess.currentRoom.playerList.indexOf(DrawandGuess.self);
+        int prevPlayer = DrawandGuess.currentRoom.playerList.size()-1;
+        if (index != 0) {
+            prevPlayer = index - 1;
+        }
+        if (DrawandGuess.turn > 0) {
             Graphics2D g2 = (Graphics2D) g;
-            for (ArrayList<ColorPoint> line: prevDrawing) {
-                if (line.size() > 0) {
-                    g.setColor(line.get(0).getColor());
-                    g2.setColor(line.get(0).getColor());
-                    g2.setStroke(new BasicStroke((float) (line.get(0).size*0.85)));
-                    for (int i = 0; i < line.size(); i++) {
-                        if (i != line.size()-1) {
-                            g2.drawLine(line.get(i).x + line.get(i).size/2, line.get(i).y+ line.get(i).size/2,
-                                    line.get(i+1).x+ line.get(i).size/2, line.get(i+1).y+ line.get(i).size/2);
+            synchronized (DrawandGuess.currentRoom) {
+                for (ColorLine line : DrawandGuess.currentRoom.playerList.get(prevPlayer)
+                        .drawingList.get((DrawandGuess.turn - 1) / 2)) {
+                    g.setColor(line.getColor());
+                    g2.setColor(line.getColor());
+                    g2.setStroke(new BasicStroke((float) (line.size * 0.85)));
+                    for (int i = 0; i < line.x.size(); i++) {
+                        if (i != line.x.size() - 1) {
+                            g2.drawLine(line.x.get(i) + line.size / 2, line.y.get(i) + line.size / 2,
+                                    line.x.get(i + 1) + line.size / 2, line.y.get(i + 1) + line.size / 2);
                         }
-                        g.fillOval(line.get(i).x, line.get(i).y, line.get(i).size, line.get(i).size);
+                        g.fillOval(line.x.get(i), line.y.get(i), line.size, line.size);
                     }
                 }
             }
         }
     }
 
-    public void setPrevDrawing(ArrayList<ArrayList<ColorPoint>> drawing) {
+    public void setPrevDrawing(ArrayList<ColorLine> drawing) {
         this.prevDrawing = drawing;
         repaint();
     }
