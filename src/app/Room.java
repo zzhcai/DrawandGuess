@@ -1,6 +1,7 @@
 package app;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.Random;
 
@@ -10,7 +11,7 @@ import java.util.Random;
  * The IP and port of a room should not change once decided, but in exchange for making the currentRoom object
  * final in the main class, these two fields are not final here. DO NOT CHANGE THEM.
  */
-public class Room{
+public class Room {
     // The unique identifier of the room is its current host's ID.
     public Player host;
     public String IP;
@@ -20,7 +21,11 @@ public class Room{
     public int timeLimit;
     public ArrayList<String> dictionary = new ArrayList<>();
     public ArrayList<Player> playerList = new ArrayList<>();
-    public int numRounds;
+    public int numRounds = 2;
+    public int numTurn = 4;
+    public ArrayList<ArrayList<String>> initWords = new ArrayList<>();
+    public boolean inGame = false;
+    public boolean lastRound = false;
 
     public Room() {
         this.port = new Random().nextInt(10000) + 9000;
@@ -52,4 +57,44 @@ public class Room{
     }
 
     public InetSocketAddress getAddress() { return new InetSocketAddress(IP, port); }
+
+    public boolean allDone(int turn) {
+        for (Player player: playerList) {
+            // guess on even turn
+            if (turn % 2 == 0) {
+                if (player.guessedList.size() < (turn + 2) / 2) {
+                    return false;
+                }
+            } else {
+                if (player.drawingList.size() < (turn + 1) / 2) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public void generateInitWords() {
+        Random random = new Random();
+        int num = 3 * playerList.size();
+        int[] ints = new int[num];
+
+        for (int i = 0; i < num; i++) {
+            ints[i] = random.nextInt(dictionary.size());
+            for (int j = 0; j < i; j++) {
+                if (ints[i] == ints[j]) {
+                    i--;
+                    break;
+                }
+            }
+        }
+
+        for (int i = 0; i < playerList.size(); i++) {
+            ArrayList<String> iWords = new ArrayList<>();
+            iWords.add(dictionary.get(ints[3 * i]));
+            iWords.add(dictionary.get(ints[3 * i + 1]));
+            iWords.add(dictionary.get(ints[3 * i + 2]));
+            initWords.add(iWords);
+        }
+    }
 }

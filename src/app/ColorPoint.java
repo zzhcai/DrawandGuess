@@ -6,12 +6,16 @@ public class ColorPoint {
     public int x;
     public int y;
     public int size;
-    public Color color;
+    public int rgb;
 
-    public ColorPoint(int x, int y, int size, Color color) {
+    public ColorPoint(int x, int y, int size, int rgb) {
         this.x = x;
         this.y = y;
         this.size = size;
-        this.color = color;
+        this.rgb = rgb;
+    }
+
+    public Color getColor() {
+        return new Color(rgb);
     }
 }

@@ -1,13 +1,7 @@
 package app;
 
-import srm.ReliableMulticastSocket;
 
-import java.awt.*;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Objects;
 
 /**
@@ -18,13 +12,13 @@ import java.util.Objects;
 public class Player implements Comparable<Player> {
 
     public String name;
-    private String[] words;
-    private String[] guesses;
-    private Graphics[] drawings;
     public boolean isHost = false;
     public boolean ready = false;
     // This field is actively added when this player object is received as a multicast message.
     public Long lastActive;
+    public ArrayList<String> guessedList = new ArrayList<>();
+    public ArrayList<ArrayList<ArrayList<ColorPoint>>> drawingList = new ArrayList<>();
+    public boolean inGame = false;
 
     @Override
     public boolean equals(Object o) {
@@ -45,4 +39,20 @@ public class Player implements Comparable<Player> {
     public int compareTo(Player o) {
         return this.name.compareTo(o.name);
     }
+
+    public void roundStart() {
+        guessedList.clear();
+        drawingList.clear();
+    }
+
+
+    public boolean allReceived(int turn) {
+        // guess on even turn
+        boolean received = true;
+
+        return received;
+    }
 }
+
+
+

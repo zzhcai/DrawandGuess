@@ -126,7 +126,9 @@ public class LobbyPane extends JPanel {
             DrawandGuess.currentRoom.timeLimit = 0;
             DrawandGuess.currentRoom.numRounds = 0;
         }
-        WhiteBoardGUI.redirectTo(this, new WaitingRoomPane());
+
+        WhiteBoardGUI.redirectTo(this, WhiteBoardGUI.waitingRoom);
+        WhiteBoardGUI.waitingRoom.startRoom();
     }
 
     /**
@@ -146,7 +148,8 @@ public class LobbyPane extends JPanel {
             }
             DrawandGuess.self.isHost = false;
             thread.interrupted = true;
-            WhiteBoardGUI.redirectTo(this, new WaitingRoomPane());
+            WhiteBoardGUI.redirectTo(this, WhiteBoardGUI.waitingRoom);
+            WhiteBoardGUI.waitingRoom.startRoom();
         }
     }
 

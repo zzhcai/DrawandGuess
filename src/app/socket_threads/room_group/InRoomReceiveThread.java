@@ -1,11 +1,9 @@
 package app.socket_threads.room_group;
 
-import app.DrawandGuess;
-import app.MySocketFactory;
-import app.Player;
-import app.Room;
+import app.*;
 import srm.ReliableMulticastSocket;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.time.Instant;
@@ -37,8 +35,30 @@ public class InRoomReceiveThread extends Thread {
                     DrawandGuess.currentRoom.host = room.host;
                     DrawandGuess.currentRoom.numRounds = room.numRounds;
                     DrawandGuess.currentRoom.timeLimit = room.timeLimit;
+                    DrawandGuess.currentRoom.inGame = room.inGame;
+                    DrawandGuess.currentRoom.lastRound = room.lastRound;
+                    DrawandGuess.currentRoom.initWords = room.initWords;
                     DrawandGuess.currentRoom.notifyAll();
                 }
+
+                if (DrawandGuess.currentRoom.inGame && !DrawandGuess.self.inGame) {
+                    DrawandGuess.self.inGame = true;
+                    WhiteBoardGUI.redirectTo(WhiteBoardGUI.waitingRoom, WhiteBoardGUI.drawPane);
+                    int index = DrawandGuess.currentRoom.playerList.indexOf(DrawandGuess.self);
+                    String initWord = (String) JOptionPane.showInputDialog(null,
+                            "Select starting word",
+                            "Starting word",
+                            JOptionPane.QUESTION_MESSAGE, null,
+                            DrawandGuess.currentRoom.initWords.get(index).toArray(),
+                            DrawandGuess.currentRoom.initWords.get(index).get(0));
+                    if (initWord==null) {
+                        initWord = DrawandGuess.currentRoom.initWords.get(index).get(0);
+                    }
+                    DrawandGuess.self.guessedList.add(initWord);
+                    WhiteBoardGUI.setPrevWord("Starting word: " + initWord);
+                }
+
+
             } else {
                 player.lastActive = Instant.now().toEpochMilli();
                 synchronized (DrawandGuess.currentRoom) {
