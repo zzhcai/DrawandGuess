@@ -42,9 +42,8 @@ public class DrawPane extends JPanel {
                 if (index != 0) {
                     prevPlayer = index - 1;
                 }
-//            JOptionPane.showConfirmDialog(null, DrawandGuess.currentRoom.playerList.get(prevPlayer)
+//                JOptionPane.showConfirmDialog(null, DrawandGuess.currentRoom.playerList.get(prevPlayer)
 //                    .guessedList.get((DrawandGuess.turn)/2));
-//            wordLabel.setText("123");
                 wordLabel.setText("Prev player guessed: " + DrawandGuess.currentRoom.playerList.get(prevPlayer)
                         .guessedList.get((DrawandGuess.turn)/2));
             }

@@ -35,11 +35,13 @@ public class InLobbyAdvertiseThread extends Thread {
         ReliableMulticastSocket socket = MySocketFactory.newInstance(null, DrawandGuess.LOBBY_PORT);
         // Multicast this room to the lobby every second
         while (!isInterrupted) {
-            byte[] out = DrawandGuess.gson.toJson(DrawandGuess.currentRoom, Room.class).getBytes();
-            try {
-                socket.send(new DatagramPacket(out, out.length, InetAddress.getByName(DrawandGuess.LOBBY_ADDRESS), DrawandGuess.LOBBY_PORT));
-            } catch (IOException e) {
-                e.printStackTrace();
+            synchronized (DrawandGuess.currentRoom) {
+                byte[] out = DrawandGuess.gson.toJson(DrawandGuess.currentRoom, Room.class).getBytes();
+                try {
+                    socket.send(new DatagramPacket(out, out.length, InetAddress.getByName(DrawandGuess.LOBBY_ADDRESS), DrawandGuess.LOBBY_PORT));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
             try {
                 sleep(1000);

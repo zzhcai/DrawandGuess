@@ -40,26 +40,26 @@ public class InRoomReceiveThread extends Thread {
                     DrawandGuess.currentRoom.initWords = room.initWords;
                     DrawandGuess.currentRoom.notifyAll();
 
-                    if (DrawandGuess.currentRoom.inGame && !DrawandGuess.self.inGame) {
-                        DrawandGuess.self.inGame = true;
-                        WhiteBoardGUI.redirectTo(WhiteBoardGUI.waitingRoom, WhiteBoardGUI.drawPane);
-                        int index = DrawandGuess.currentRoom.playerList.indexOf(DrawandGuess.self);
-                        String initWord = (String) JOptionPane.showInputDialog(null,
-                                "Select starting word",
-                                "Starting word",
-                                JOptionPane.QUESTION_MESSAGE, null,
-                                DrawandGuess.currentRoom.initWords.get(index).toArray(),
-                                DrawandGuess.currentRoom.initWords.get(index).get(0));
-                        if (initWord==null) {
-                            initWord = DrawandGuess.currentRoom.initWords.get(index).get(0);
+                    synchronized (DrawandGuess.self) {
+                        if (DrawandGuess.currentRoom.inGame && !DrawandGuess.self.inGame) {
+                            DrawandGuess.self.inGame = true;
+                            WhiteBoardGUI.redirectTo(WhiteBoardGUI.waitingRoom, WhiteBoardGUI.drawPane);
+                            int index = DrawandGuess.currentRoom.playerList.indexOf(DrawandGuess.self);
+                            String initWord = (String) JOptionPane.showInputDialog(null,
+                                    "Select starting word",
+                                    "Starting word",
+                                    JOptionPane.QUESTION_MESSAGE, null,
+                                    DrawandGuess.currentRoom.initWords.get(index).toArray(),
+                                    DrawandGuess.currentRoom.initWords.get(index).get(0));
+                            if (initWord==null) {
+                                initWord = DrawandGuess.currentRoom.initWords.get(index).get(0);
+                            }
+                            DrawandGuess.self.guessedList.add(initWord);
+                            WhiteBoardGUI.setPrevWord("Starting word: " + initWord);
                         }
-                        DrawandGuess.self.guessedList.add(initWord);
-                        WhiteBoardGUI.setPrevWord("Starting word: " + initWord);
                     }
+
                 }
-
-
-
 
             } else {
                 player.lastActive = Instant.now().toEpochMilli();
@@ -74,9 +74,11 @@ public class InRoomReceiveThread extends Thread {
                 if (DrawandGuess.currentRoom.allDone(DrawandGuess.turn)) {
                     // even turn guess
                     if (DrawandGuess.turn % 2 == 0) {
-                        WhiteBoardGUI.moveFromWait(WhiteBoardGUI.drawPane);
+                        WhiteBoardGUI.drawPane = new DrawPane();
+                        WhiteBoardGUI.redirectTo(WhiteBoardGUI.wait, WhiteBoardGUI.drawPane);
                     } else {
-                        WhiteBoardGUI.moveFromWait(WhiteBoardGUI.guessPane);
+                        WhiteBoardGUI.guessPane = new GuessPane();
+                        WhiteBoardGUI.redirectTo(WhiteBoardGUI.wait, WhiteBoardGUI.guessPane);
                     }
                     DrawandGuess.turn++;
                 }

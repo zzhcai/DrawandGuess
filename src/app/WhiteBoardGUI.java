@@ -38,14 +38,6 @@ public class WhiteBoardGUI {
         frame.validate();
     }
 
-    public static void moveFromWait(JPanel newPane) {
-        frame.remove(wait);
-        drawPane = new DrawPane();
-        guessPane = new GuessPane();
-        frame.add(newPane);
-        frame.validate();
-    }
-
     public static void setPrevWord(String word) {
         drawPane.setWord(word);
     }

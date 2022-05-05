@@ -29,8 +29,11 @@ public class InRoomAdvertiseThread extends Thread {
         System.out.println("Player advertise thread started at " + DrawandGuess.currentRoom.getAddress());
         ReliableMulticastSocket socket = MySocketFactory.newInstance(null, DrawandGuess.currentRoom.port);
         while (!isInterrupted) {
-            ArrayList<Player> players = DrawandGuess.currentRoom.playerList;
-            Collections.sort(players);
+            ArrayList<Player> players;
+            synchronized (DrawandGuess.currentRoom) {
+                players = DrawandGuess.currentRoom.playerList;
+                Collections.sort(players);
+            }
 
             // Check if it's time to become the new host
             if (players.size() > 0
@@ -56,9 +59,11 @@ public class InRoomAdvertiseThread extends Thread {
                 socket.send(new DatagramPacket(playerOut, playerOut.length, DrawandGuess.currentRoom.getAddress()));
                 System.out.println("sent at room: " + DrawandGuess.self);
                 if (DrawandGuess.self.isHost) {
-                    byte[] roomOut = DrawandGuess.gson.toJson(DrawandGuess.currentRoom, Room.class).getBytes();
-                    socket.send(new DatagramPacket(roomOut, roomOut.length, DrawandGuess.currentRoom.getAddress()));
-                    System.out.println("sent at room: " + DrawandGuess.currentRoom);
+                    synchronized (DrawandGuess.currentRoom) {
+                        byte[] roomOut = DrawandGuess.gson.toJson(DrawandGuess.currentRoom, Room.class).getBytes();
+                        socket.send(new DatagramPacket(roomOut, roomOut.length, DrawandGuess.currentRoom.getAddress()));
+                        System.out.println("sent at room: " + DrawandGuess.currentRoom);
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();

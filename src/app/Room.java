@@ -59,15 +59,17 @@ public class Room {
     public InetSocketAddress getAddress() { return new InetSocketAddress(IP, port); }
 
     public boolean allDone(int turn) {
-        for (Player player: playerList) {
-            // guess on even turn
-            if (turn % 2 == 0) {
-                if (player.guessedList.size() < (turn + 2) / 2) {
-                    return false;
-                }
-            } else {
-                if (player.drawingList.size() < (turn + 1) / 2) {
-                    return false;
+        synchronized (this) {
+            for (Player player: playerList) {
+                // guess on even turn
+                if (turn % 2 == 0) {
+                    if (player.guessedList.size() < (turn + 2) / 2) {
+                        return false;
+                    }
+                } else {
+                    if (player.drawingList.size() < (turn + 1) / 2) {
+                        return false;
+                    }
                 }
             }
         }
