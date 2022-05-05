@@ -150,8 +150,6 @@ public class WaitingRoomPane extends JPanel {
         @Override
         public void run() {
             while (!isInterrupted) {
-                ArrayList<Player> players;
-                ArrayList<String> words;
                 boolean canStart = true;
                 synchronized (DrawandGuess.currentRoom) {
                     // Wait until getting notified current room's changed
@@ -165,24 +163,17 @@ public class WaitingRoomPane extends JPanel {
                         if (now - player.lastActive > DrawandGuess.PLAYER_TIMEOUT) DrawandGuess.currentRoom.playerList.remove(player);
                         if (!player.ready) canStart = false;
                     }
-                    players = DrawandGuess.currentRoom.playerList;
-                    words = DrawandGuess.currentRoom.dictionary;
+                    playerList.setListData(DrawandGuess.currentRoom.playerList.toArray(new Player[0]));
+                    wordList.setListData(DrawandGuess.currentRoom.dictionary.toArray(new String[0]));
                 }
-                Collections.sort(players);
-                dlmPlayers.removeAllElements();
-                dlmPlayers.addAll(players);
-                dlmWords.removeAllElements();
-                dlmWords.addAll(words);
-                synchronized (DrawandGuess.self) {
-                    if (DrawandGuess.self.isHost) {
-                        nameField.setEditable(true);
-                        fileButton.setEnabled(true);
-                        prepareStartButton.setText("Start");
-                        prepareStartButton.setEnabled(canStart && players.size() >= 3 && words.size() >= 3);
-                    } else {
-                        nameField.setText(DrawandGuess.currentRoom.roomName);
-                        prepareStartButton.setEnabled(true);
-                    }
+                if (DrawandGuess.self.isHost) {
+                    nameField.setEditable(true);
+                    fileButton.setEnabled(true);
+                    prepareStartButton.setText("Start");
+                    prepareStartButton.setEnabled(canStart && playerList.getModel().getSize() >= 3 && wordList.getModel().getSize() >= 3);
+                } else {
+                    nameField.setText(DrawandGuess.currentRoom.roomName);
+                    prepareStartButton.setEnabled(true);
                 }
             }
         }
