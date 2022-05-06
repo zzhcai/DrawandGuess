@@ -10,6 +10,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -96,6 +98,13 @@ public class LobbyPane extends JPanel {
         this.add(searchBar);
         this.add(searchButton);
         this.add(refreshButton);
+
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                refresh();
+            }
+        }, DrawandGuess.ROOM_TIMEOUT);
     }
 
     /**
