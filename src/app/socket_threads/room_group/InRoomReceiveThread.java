@@ -34,7 +34,6 @@ public class InRoomReceiveThread extends Thread {
                     DrawandGuess.currentRoom.dictionary = room.dictionary;
                     DrawandGuess.currentRoom.host = room.host;
                     DrawandGuess.currentRoom.numRounds = room.numRounds;
-                    DrawandGuess.currentRoom.timeLimit = room.timeLimit;
                     DrawandGuess.currentRoom.inGame = room.inGame;
                     DrawandGuess.currentRoom.initWords = room.initWords;
                     DrawandGuess.currentRoom.numPlayers = room.numPlayers;
@@ -87,8 +86,6 @@ public class InRoomReceiveThread extends Thread {
                         }
 
                         synchronized (DrawandGuess.self) {
-                            System.out.println(DrawandGuess.self.round);
-                            System.out.println(DrawandGuess.currentRoom.numRounds);
                             if (DrawandGuess.self.round == DrawandGuess.currentRoom.numRounds) {
                                 WhiteBoardGUI.redirectTo(WhiteBoardGUI.showPane, WhiteBoardGUI.end);
                                 DrawandGuess.self.round++;
