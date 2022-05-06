@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * A room that keeps all the information of the game itself and all users inside.
@@ -17,10 +18,9 @@ public class Room {
     public String IP;
     public int port;
     public String roomName;
-    public int maxPlayer;
     public int timeLimit;
-    public ArrayList<String> dictionary = new ArrayList<>();
-    public ArrayList<Player> playerList = new ArrayList<>();
+    public CopyOnWriteArrayList<String> dictionary = new CopyOnWriteArrayList<>();
+    public CopyOnWriteArrayList<Player> playerList = new CopyOnWriteArrayList<>();
     public int numRounds = 2;
     public int numTurn = 4;
     public ArrayList<ArrayList<String>> initWords = new ArrayList<>();
@@ -47,7 +47,7 @@ public class Room {
         return "{host=" + host.name +
                 ", name=" + roomName +
                 ", numPlayer=" + playerList.size() +
-                ", maxPlayer=" + maxPlayer +
+                ", maxTime=" + timeLimit +
                 ", address=" + IP + "port=" + port + "}";
     }
 

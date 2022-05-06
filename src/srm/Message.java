@@ -19,8 +19,8 @@ public class Message
 	/** Body of the message:
 	 *  - DATA: byte(payload)
 	 *  - SESSION: byte(toJson([t, StateTable::getViewingPage]))
-	 *  - REQUEST: byte(${whose}-${seq})
-	 *  - REPAIR: byte(toJson([${whose}-${seq}, byte(payload)])) */
+	 *  - REQUEST: byte(toJson([${whose}-${seq}, distToSrc]))
+	 *  - REPAIR:  byte(toJson([${whose}-${seq}, byte(payload)])) */
 	private final byte[] body;
 
 	protected static class SessionBody
@@ -31,6 +31,19 @@ public class Message
 		public SessionBody(String t, Map<String, Long[]> view) {
 			this.t = t;
 			this.view = view;
+		}
+	}
+
+	protected static class RequestBody
+	{
+		/** ${whose}-${seq} */
+		String whose_seq;
+		/** The one-way distance to the source of missing data, in milliseconds; nullable */
+		Long distToSrc;
+
+		public RequestBody(String whose_seq, Long distToSrc) {
+			this.whose_seq = whose_seq;
+			this.distToSrc = distToSrc;
 		}
 	}
 

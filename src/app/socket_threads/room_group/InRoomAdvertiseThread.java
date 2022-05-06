@@ -29,29 +29,23 @@ public class InRoomAdvertiseThread extends Thread {
         System.out.println("Player advertise thread started at " + DrawandGuess.currentRoom.getAddress());
         ReliableMulticastSocket socket = MySocketFactory.newInstance(null, DrawandGuess.currentRoom.port);
         while (!isInterrupted) {
-            ArrayList<Player> players;
             synchronized (DrawandGuess.currentRoom) {
-                players = DrawandGuess.currentRoom.playerList;
-                Collections.sort(players);
-            }
-
-            // Check if it's time to become the new host
-            if (players.size() > 0
-                    && !players.contains(DrawandGuess.currentRoom.host)
-                    && players.get(0).equals(DrawandGuess.self)) {
-                noHostCount++;
-                if (noHostCount >= MAX_NO_HOST_COUNT) {
-                    synchronized (DrawandGuess.self) {
-                        DrawandGuess.self.isHost = true;
-                        DrawandGuess.self.ready = true;
-                        DrawandGuess.self.notifyAll();
-                    }
-                    synchronized (DrawandGuess.currentRoom) {
+                // Check if it's time to become the new host
+                if (DrawandGuess.currentRoom.playerList.size() > 0
+                        && !DrawandGuess.currentRoom.playerList.contains(DrawandGuess.currentRoom.host)
+                        && DrawandGuess.currentRoom.playerList.get(0).equals(DrawandGuess.self)) {
+                    noHostCount++;
+                    if (noHostCount >= MAX_NO_HOST_COUNT) {
+                        synchronized (DrawandGuess.self) {
+                            DrawandGuess.self.isHost = true;
+                            DrawandGuess.self.ready = true;
+                            DrawandGuess.self.notifyAll();
+                        }
                         DrawandGuess.currentRoom.host = DrawandGuess.self;
                         DrawandGuess.currentRoom.notifyAll();
                     }
-                }
-            } else noHostCount = 0;
+                } else noHostCount = 0;
+            }
 
             // Multicast player and room information
             byte[] playerOut = DrawandGuess.gson.toJson(DrawandGuess.self, Player.class).getBytes();
