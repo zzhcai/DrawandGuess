@@ -1,6 +1,7 @@
 package app;
 
 import app.UI_util.ColorLine;
+import app.UI_util.ColorPoint;
 
 import javax.swing.*;
 import java.awt.*;
