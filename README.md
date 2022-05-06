@@ -22,7 +22,33 @@ Furthermore, we develop a distributed game application that runs on top of the f
 |   └──── gson-2.9.0.jar
 ├── src/
 |   ├──── app/                                 # application
-|   |     └──── ..
+|   |     ├──── UI_util/
+|   |     |     ├──── ColorLine.java
+|   |     |     ├──── MyMouseAdapter.java
+|   |     |     ├──── PlayerRenderer.java
+|   |     |     ├──── RoomRenderer.java
+|   |     |     └──── VocabRenderer.java
+|   |     ├──── socket_threads/
+|   |     |     ├──── lobby_group/
+|   |     |     |     ├──── InLobbyAdvertiseThread.java
+|   |     |     |     └──── InLobbyReceiveThread.java
+|   |     |     └──── room_group/
+|   |     |           ├──── InRoomAdvertiseThread.java
+|   |     |           └──── InRoomReceiveThread.java
+|   |     ├──── DataCache.java
+|   |     ├──── DrawPane.java
+|   |     ├──── DrawandGuess.java              # main
+|   |     ├──── EndGamePane.java
+|   |     ├──── GuessPane.java
+|   |     ├──── LobbyPane.java
+|   |     ├──── MySocketFactory.java
+|   |     ├──── Player.java
+|   |     ├──── Room.java
+|   |     ├──── ShowPane.java
+|   |     ├──── WaitingPane.java
+|   |     ├──── WaitingRoomPane.java
+|   |     ├──── WelcomePane.java
+|   |     └──── WhiteBoardGUI.java
 |   └──── srm/                                 # framework
 |         ├──── DataCache.java
 |         ├──── Message.java
