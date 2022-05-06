@@ -1,4 +1,5 @@
 package app;
+import javax.swing.*;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ public class Room {
     public ArrayList<ArrayList<String>> initWords = new ArrayList<>();
     public boolean inGame = false;
     public boolean lastRound = false;
+    public int numPlayers = 1;
 
     public Room() {
         this.port = new Random().nextInt(10000) + 9000;
@@ -58,18 +60,20 @@ public class Room {
 
     public InetSocketAddress getAddress() { return new InetSocketAddress(IP, port); }
 
-    public boolean allDone(int turn) {
-        synchronized (this) {
-            for (Player player: playerList) {
-                // guess on even turn
-                if (turn % 2 == 0) {
-                    if (player.guessedList.size() < (turn + 2) / 2) {
-                        return false;
-                    }
-                } else {
-                    if (player.drawingList.size() < (turn + 1) / 2) {
-                        return false;
-                    }
+    public boolean allDone() {
+        int turn = DrawandGuess.turn;
+        if (playerList.size() < numPlayers) {
+            return false;
+        }
+        for (Player player: playerList) {
+            // guess on even turn
+            if (turn % 2 == 0) {
+                if (player.guessedList.size() < (turn + 2) / 2) {
+                    return false;
+                }
+            } else {
+                if (player.drawingList.size() < (turn + 1) / 2) {
+                    return false;
                 }
             }
         }

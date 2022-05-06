@@ -14,6 +14,7 @@ public class WhiteBoardGUI {
     public static DrawPane drawPane = new DrawPane();
     public static GuessPane guessPane = new GuessPane();
     public static WaitingPane wait = new WaitingPane();
+    public static ShowPane showPane = new ShowPane();
 
     public static void setUp() {
         frame = new JFrame("Draw and Guess");
@@ -21,7 +22,7 @@ public class WhiteBoardGUI {
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(new WelcomePane());
-//        frame.add(new DrawPane());
+//        frame.add(new ShowPane());
         frame.setVisible(true);
     }
 

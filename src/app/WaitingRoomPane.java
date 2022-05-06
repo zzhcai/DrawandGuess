@@ -118,6 +118,7 @@ public class WaitingRoomPane extends JPanel {
             if (prepareStartButton.getText().equals("Start")) {
 //                WhiteBoardGUI.redirectTo(this, new DrawPane());
                 DrawandGuess.currentRoom.generateInitWords();
+                DrawandGuess.currentRoom.numPlayers = DrawandGuess.currentRoom.playerList.size();
                 DrawandGuess.currentRoom.inGame = true;
                 inLobbyAdvertiseThread.isInterrupted = true;
                 monitorThread.isInterrupted = true;

@@ -38,6 +38,7 @@ public class InRoomReceiveThread extends Thread {
                     DrawandGuess.currentRoom.inGame = room.inGame;
                     DrawandGuess.currentRoom.lastRound = room.lastRound;
                     DrawandGuess.currentRoom.initWords = room.initWords;
+                    DrawandGuess.currentRoom.numPlayers = room.numPlayers;
                     DrawandGuess.currentRoom.notifyAll();
 
                     synchronized (DrawandGuess.self) {
@@ -71,14 +72,26 @@ public class InRoomReceiveThread extends Thread {
                 }
             }
             synchronized (DrawandGuess.currentRoom) {
-                if (DrawandGuess.currentRoom.allDone(DrawandGuess.turn)) {
-                    // even turn guess
-                    if (DrawandGuess.turn % 2 == 0) {
-                        WhiteBoardGUI.drawPane = new DrawPane();
-                        WhiteBoardGUI.redirectTo(WhiteBoardGUI.wait, WhiteBoardGUI.drawPane);
+                if (DrawandGuess.currentRoom.allDone()) {
+
+                    // end of round
+                    if (DrawandGuess.turn == DrawandGuess.currentRoom.numTurn) {
+                        WhiteBoardGUI.showPane = new ShowPane();
+                        WhiteBoardGUI.redirectTo(WhiteBoardGUI.wait, WhiteBoardGUI.showPane);
+                        try {
+                            WhiteBoardGUI.showPane.showing();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     } else {
-                        WhiteBoardGUI.guessPane = new GuessPane();
-                        WhiteBoardGUI.redirectTo(WhiteBoardGUI.wait, WhiteBoardGUI.guessPane);
+                        // even turn guess
+                        if (DrawandGuess.turn % 2 == 0) {
+                            WhiteBoardGUI.drawPane = new DrawPane();
+                            WhiteBoardGUI.redirectTo(WhiteBoardGUI.wait, WhiteBoardGUI.drawPane);
+                        } else {
+                            WhiteBoardGUI.guessPane = new GuessPane();
+                            WhiteBoardGUI.redirectTo(WhiteBoardGUI.wait, WhiteBoardGUI.guessPane);
+                        }
                     }
                     DrawandGuess.turn++;
                 }
