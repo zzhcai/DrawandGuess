@@ -25,21 +25,30 @@ public class ShowPane extends JPanel {
     }
 
     public void showing() throws InterruptedException {
+        Thread.sleep(1000);
         for (int word = 0; word < DrawandGuess.currentRoom.numPlayers; word++) {
-
             for (int turn = 0; turn < DrawandGuess.currentRoom.numTurn/2; turn++) {
                 drawing.clear();
+                guessLabel.setText("");
+                wordLabel.setText("");
+                repaint();
+                Thread.sleep(500);
+
+                guessLabel.setText("");
+                int index;
                 if (turn == 0) {
                     wordLabel.setText("Init word: " + DrawandGuess.currentRoom.playerList
                             .get((word+turn)%DrawandGuess.currentRoom.numPlayers).guessedList.get(turn));
+                    index = word+turn;
                 } else {
                     wordLabel.setText("Prev player guessed word: " + DrawandGuess.currentRoom.playerList
                             .get((word+turn)%DrawandGuess.currentRoom.numPlayers).guessedList.get(turn));
+                    index = word+turn+1;
                 }
-                Thread.sleep(200);
+                Thread.sleep(500);
 
                 for (ColorLine line: DrawandGuess.currentRoom.playerList
-                        .get((word+turn)%DrawandGuess.currentRoom.numPlayers).drawingList.get(turn)) {
+                        .get((index)%DrawandGuess.currentRoom.numPlayers).drawingList.get(turn)) {
                     drawing.add(new ColorLine(line.size, line.rgb));
                     long sleepTime = 300/line.x.size();
                     for (int i = 0; i < line.x.size(); i++) {
@@ -52,10 +61,9 @@ public class ShowPane extends JPanel {
                 }
 
                 guessLabel.setText("Guessed: " + DrawandGuess.currentRoom.playerList
-                        .get((word+turn)%DrawandGuess.currentRoom.numPlayers).guessedList.get(turn + 1));
+                        .get((index+1)%DrawandGuess.currentRoom.numPlayers).guessedList.get(turn + 1));
                 Thread.sleep(2000);
             }
-
         }
     }
 

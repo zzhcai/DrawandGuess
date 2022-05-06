@@ -1,6 +1,7 @@
 package app;
 
 import app.UI_util.ColorLine;
+import app.UI_util.MyMouseAdapter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,6 +39,7 @@ public class GuessPane extends JPanel {
 
         submitButton = new JButton("Submit");
         submitButton.setBounds(720, 600, 60, 50);
+        submitButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
         submitButton.addActionListener(e -> {
             int result = JOptionPane.showConfirmDialog(null, "You guessed: " + guessWord.getText(), "Title", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
             if (result == 0) {

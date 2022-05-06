@@ -21,6 +21,7 @@ public class Player implements Comparable<Player> {
     public ArrayList<String> guessedList = new ArrayList<>();
     public ArrayList<ArrayList<ColorLine>> drawingList = new ArrayList<>();
     public boolean inGame = false;
+    public int round = 1;
 
     @Override
     public boolean equals(Object o) {

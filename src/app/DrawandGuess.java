@@ -16,7 +16,6 @@ public class DrawandGuess {
     public static final int PLAYER_TIMEOUT = 1500;
     public static final int ROOM_TIMEOUT = 1500;
     public static int turn = 1;
-    public static int round = 1;
 
     public static void main(String[] args) {
         WhiteBoardGUI.setUp();

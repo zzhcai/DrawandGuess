@@ -66,6 +66,9 @@ public class Room {
             return false;
         }
         for (Player player: playerList) {
+            if (player.round < DrawandGuess.self.round) {
+                return false;
+            }
             // guess on even turn
             if (turn % 2 == 0) {
                 if (player.guessedList.size() < (turn + 2) / 2) {

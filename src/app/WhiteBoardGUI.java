@@ -1,7 +1,6 @@
 package app;
 
 import app.UI_util.ColorLine;
-import app.UI_util.WaitingPane;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -15,6 +14,7 @@ public class WhiteBoardGUI {
     public static GuessPane guessPane = new GuessPane();
     public static WaitingPane wait = new WaitingPane();
     public static ShowPane showPane = new ShowPane();
+    public static EndGamePane end = new EndGamePane();
 
     public static void setUp() {
         frame = new JFrame("Draw and Guess");
@@ -22,7 +22,7 @@ public class WhiteBoardGUI {
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(new WelcomePane());
-//        frame.add(new ShowPane());
+//        frame.add(new EndGamePane());
         frame.setVisible(true);
     }
 

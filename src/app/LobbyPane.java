@@ -123,7 +123,6 @@ public class LobbyPane extends JPanel {
             DrawandGuess.currentRoom.host = DrawandGuess.self;
             DrawandGuess.currentRoom.roomName = roomName;
             DrawandGuess.currentRoom.timeLimit = maxDrawTime;
-            DrawandGuess.currentRoom.numRounds = 0;
         }
 
         WhiteBoardGUI.redirectTo(this, WhiteBoardGUI.waitingRoom);
