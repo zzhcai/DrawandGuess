@@ -37,3 +37,8 @@ Furthermore, we develop a distributed game application that runs on top of the f
 ├── README
 └── vocab.txt                                  # example vocabulary file
 ```
+
+
+# Library
+
+https://search.maven.org/artifact/com.google.code.gson/gson/2.9.0/jar
