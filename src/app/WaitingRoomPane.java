@@ -122,8 +122,12 @@ public class WaitingRoomPane extends JPanel {
                 DrawandGuess.currentRoom.inGame = true;
                 inLobbyAdvertiseThread.isInterrupted = true;
                 monitorThread.isInterrupted = true;
-            }else
+            } else {
+                if (prepareStartButton.getText().equals("Prepare"))
+                    prepareStartButton.setText("Unprepare");
+                else prepareStartButton.setText("Prepare");
                 DrawandGuess.self.ready = !DrawandGuess.self.ready;
+            }
             prepareStartButton.setEnabled(true);
         });
         this.add(prepareStartButton);
