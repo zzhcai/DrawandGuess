@@ -1,5 +1,7 @@
 package app;
 
+import app.UI_util.ColorLine;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -11,10 +13,12 @@ public class DrawPane extends JPanel {
     private ArrayList<ColorPoint> points;
     private ArrayList<ArrayList<ColorPoint>> pointLines;
     private ArrayList<ArrayList<ColorPoint>> lastLines;
+    private ArrayList<ColorLine> lines = new ArrayList<>();
+    private ArrayList<ColorLine> removedLines = new ArrayList<>();
     private int size = 20;
     private Color color = Color.blue;
     private boolean rubber = false;
-    private final int ver = 2;
+    private final int ver = 3;
     private Image mouse;
     private Toolkit tk;
     private Cursor cu;
@@ -22,10 +26,57 @@ public class DrawPane extends JPanel {
     private int y = -1;
     private int round;
     private int turn;
+    JLabel wordLabel;
+    JButton submitButton;
 
     public DrawPane() {
         super();
         this.setLayout(null);
+
+        wordLabel = new JLabel();
+        wordLabel.setBounds(550, 20, 200, 50);
+        if (DrawandGuess.turn > 1) {
+            synchronized (DrawandGuess.currentRoom) {
+                int index = DrawandGuess.currentRoom.playerList.indexOf(DrawandGuess.self);
+                int prevPlayer = DrawandGuess.currentRoom.playerList.size()-1;
+                if (index != 0) {
+                    prevPlayer = index - 1;
+                }
+//                JOptionPane.showConfirmDialog(null, DrawandGuess.currentRoom.playerList.get(prevPlayer)
+//                    .guessedList.get((DrawandGuess.turn)/2));
+                wordLabel.setText("Prev player guessed: " + DrawandGuess.currentRoom.playerList.get(prevPlayer)
+                        .guessedList.get((DrawandGuess.turn)/2));
+            }
+        }
+        this.add(wordLabel);
+
+        submitButton = new JButton("submit");
+        submitButton.setBounds(1030, 50, 150, 50);
+        submitButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e);
+                JButton source = (JButton) e.getSource();
+                source.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                x = -1;
+                y = -1;
+                repaint();
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                JButton source = (JButton) e.getSource();
+                source.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+        });
+
+        submitButton.addActionListener(e -> {
+            DrawandGuess.self.drawingList.add(lines);
+            WhiteBoardGUI.moveToWait(this);
+        });
+
+        this.add(submitButton);
 
         if (ver != 0) {
             pointLines = new ArrayList<>();
@@ -77,21 +128,39 @@ public class DrawPane extends JPanel {
             });
 
             backButton.addActionListener(e -> {
-                lastLines.add(pointLines.get(pointLines.size()-1));
-                pointLines.remove(pointLines.size()-1);
-                nextButton.setEnabled(true);
-                if (pointLines.size() <= 0) {
-                    backButton.setEnabled(false);
+                if (ver == 3) {
+                    removedLines.add(lines.get(lines.size()-1));
+                    lines.remove(lines.size()-1);
+                    nextButton.setEnabled(true);
+                    if (lines.size() <= 0) {
+                        backButton.setEnabled(false);
+                    }
+                } else {
+                    lastLines.add(pointLines.get(pointLines.size()-1));
+                    pointLines.remove(pointLines.size()-1);
+                    nextButton.setEnabled(true);
+                    if (pointLines.size() <= 0) {
+                        backButton.setEnabled(false);
+                    }
                 }
                 repaint();
             });
 
             nextButton.addActionListener(e -> {
-                pointLines.add(lastLines.get(lastLines.size()-1));
-                lastLines.remove(lastLines.size()-1);
-                backButton.setEnabled(true);
-                if (lastLines.size() <= 0) {
-                    nextButton.setEnabled(false);
+                if (ver == 3) {
+                    lines.add(removedLines.get(removedLines.size()-1));
+                    removedLines.remove(removedLines.size()-1);
+                    backButton.setEnabled(true);
+                    if (removedLines.size() <= 0) {
+                        nextButton.setEnabled(false);
+                    }
+                } else {
+                    pointLines.add(lastLines.get(lastLines.size()-1));
+                    lastLines.remove(lastLines.size()-1);
+                    backButton.setEnabled(true);
+                    if (lastLines.size() <= 0) {
+                        nextButton.setEnabled(false);
+                    }
                 }
                 repaint();
             });
@@ -102,11 +171,19 @@ public class DrawPane extends JPanel {
                     super.mousePressed(e);
                     x = e.getX() - size/2;
                     y = e.getY() - size/2;
-                    pointLines.add(new ArrayList<>());
-                    pointLines.get(pointLines.size()-1).add(new ColorPoint(x, y, size, color));
+                    if (ver == 3) {
+                        lines.add(new ColorLine(size, color.getRGB()));
+                        lines.get(lines.size()-1).x.add(x);
+                        lines.get(lines.size()-1).y.add(y);
+                        removedLines.clear();
+                    } else {
+                        pointLines.add(new ArrayList<>());
+                        pointLines.get(pointLines.size()-1).add(new ColorPoint(x, y, size, color.getRGB()));
+                        lastLines.clear();
+                    }
                     backButton.setEnabled(true);
                     nextButton.setEnabled(false);
-                    lastLines.clear();
+
                     repaint();
                 }
             });
@@ -116,11 +193,15 @@ public class DrawPane extends JPanel {
                 public void mouseDragged(MouseEvent e) {
                     x = e.getX() - size/2;
                     y = e.getY() - size/2;
-                    pointLines.get(pointLines.size()-1).add(new ColorPoint(x, y, size, color));
+                    if (ver == 3) {
+                        lines.get(lines.size()-1).x.add(x);
+                        lines.get(lines.size()-1).y.add(y);
+                    } else {
+                        pointLines.get(pointLines.size()-1).add(new ColorPoint(x, y, size, color.getRGB()));
+                    }
                     repaint();
                 }
             });
-
 
 
             this.add(backButton);
@@ -136,7 +217,7 @@ public class DrawPane extends JPanel {
                     if (rubber) {
                         removeFromList(x, y);
                     } else {
-                        points.add(new ColorPoint(x, y, size, color));
+                        points.add(new ColorPoint(x, y, size, color.getRGB()));
                     }
                     repaint();
                 }
@@ -226,6 +307,7 @@ public class DrawPane extends JPanel {
 
     }
 
+
     public void paint(Graphics g) {
         super.paint(g);
 
@@ -234,33 +316,48 @@ public class DrawPane extends JPanel {
             g.drawOval(x, y, size, size);
         }
 
-        if (ver == 1) {
+        if (ver == 3) {
+            Graphics2D g2 = (Graphics2D) g;
+            for (ColorLine line: lines) {
+                g.setColor(line.getColor());
+                g2.setColor(line.getColor());
+                g2.setStroke(new BasicStroke((float) (line.size*0.85)));
+                for (int i = 0; i < line.x.size(); i++) {
+                    if (i != line.x.size()-1) {
+                        g2.drawLine(line.x.get(i) + line.size/2, line.y.get(i)+ line.size/2,
+                                line.x.get(i+1)+ line.size/2, line.y.get(i+1)+ line.size/2);
+                    }
+                    g.fillOval(line.x.get(i), line.y.get(i), line.size, line.size);
+                }
+            }
+
+        } else if (ver == 1) {
             Graphics2D g2 = (Graphics2D) g;
             for (ArrayList<ColorPoint> line: pointLines) {
                 if (line.size() > 1) {
-                    g2.setColor(line.get(0).color);
+                    g2.setColor(line.get(0).getColor());
                     g2.setStroke(new BasicStroke(line.get(0).size));
                     for (int i = 0; i < line.size()-1; i++) {
                         g2.drawLine(line.get(i).x + line.get(i).size/2, line.get(i).y+ line.get(i).size/2,
                                 line.get(i+1).x+ line.get(i).size/2, line.get(i+1).y+ line.get(i).size/2);
                     }
                 } else if (line.size() > 0) {
-                    g.setColor(line.get(0).color);
+                    g.setColor(line.get(0).getColor());
                     g.fillOval(line.get(0).x, line.get(0).y, line.get(0).size, line.get(0).size);
                 }
             }
 
         } else if (ver == 0){
             for (ColorPoint point: points) {
-                g.setColor(point.color);
+                g.setColor(point.getColor());
                 g.fillOval(point.x, point.y, point.size, point.size);
             }
         } else if (ver == 2) {
             Graphics2D g2 = (Graphics2D) g;
             for (ArrayList<ColorPoint> line: pointLines) {
                 if (line.size() > 0) {
-                    g.setColor(line.get(0).color);
-                    g2.setColor(line.get(0).color);
+                    g.setColor(line.get(0).getColor());
+                    g2.setColor(line.get(0).getColor());
                     g2.setStroke(new BasicStroke((float) (line.get(0).size*0.85)));
                     for (int i = 0; i < line.size(); i++) {
                         if (i != line.size()-1) {
@@ -286,5 +383,9 @@ public class DrawPane extends JPanel {
         for (ColorPoint point: removeList) {
             points.remove(point);
         }
+    }
+
+    public void setWord(String word) {
+        wordLabel.setText(word);
     }
 }

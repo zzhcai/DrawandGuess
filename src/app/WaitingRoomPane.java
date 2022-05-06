@@ -22,13 +22,16 @@ public class WaitingRoomPane extends JPanel {
     private final DefaultListModel<String> dlmWords = new DefaultListModel<>();
     private final JList<String> wordList = new JList<>(dlmWords);
     private JScrollPane spWords = new JScrollPane(wordList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-    private final JTextField nameField;
-    private final JTextField numField;
-    private final JButton fileButton;
-    private final JButton prepareStartButton;
+    private JTextField nameField;
+    private JTextField numField;
+    private JButton fileButton;
+    private JButton prepareStartButton;
 
     public WaitingRoomPane() {
         super();
+    }
+
+    public void startRoom(){
         this.setLayout(null);
 
         WaitingRoomMonitorThread monitorThread = new WaitingRoomMonitorThread();
@@ -113,7 +116,10 @@ public class WaitingRoomPane extends JPanel {
         prepareStartButton.addActionListener(e -> {
             prepareStartButton.setEnabled(false);
             if (prepareStartButton.getText().equals("Start")) {
-                WhiteBoardGUI.redirectTo(this, new DrawPane());
+//                WhiteBoardGUI.redirectTo(this, new DrawPane());
+                DrawandGuess.currentRoom.generateInitWords();
+                DrawandGuess.currentRoom.numPlayers = DrawandGuess.currentRoom.playerList.size();
+                DrawandGuess.currentRoom.inGame = true;
                 inLobbyAdvertiseThread.isInterrupted = true;
                 monitorThread.isInterrupted = true;
             }else
@@ -139,6 +145,7 @@ public class WaitingRoomPane extends JPanel {
             e.printStackTrace();
         }
     }
+
 
     /**
      * This class starts and ends with the WaitingROomPane. It waits on the currentRoom object to be changed,

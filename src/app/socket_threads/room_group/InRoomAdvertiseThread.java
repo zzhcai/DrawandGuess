@@ -53,9 +53,11 @@ public class InRoomAdvertiseThread extends Thread {
                 socket.send(new DatagramPacket(playerOut, playerOut.length, DrawandGuess.currentRoom.getAddress()));
                 System.out.println("sent at room: " + DrawandGuess.self);
                 if (DrawandGuess.self.isHost) {
-                    byte[] roomOut = DrawandGuess.gson.toJson(DrawandGuess.currentRoom, Room.class).getBytes();
-                    socket.send(new DatagramPacket(roomOut, roomOut.length, DrawandGuess.currentRoom.getAddress()));
-                    System.out.println("sent at room: " + DrawandGuess.currentRoom);
+                    synchronized (DrawandGuess.currentRoom) {
+                        byte[] roomOut = DrawandGuess.gson.toJson(DrawandGuess.currentRoom, Room.class).getBytes();
+                        socket.send(new DatagramPacket(roomOut, roomOut.length, DrawandGuess.currentRoom.getAddress()));
+                        System.out.println("sent at room: " + DrawandGuess.currentRoom);
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();

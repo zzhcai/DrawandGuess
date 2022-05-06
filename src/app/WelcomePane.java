@@ -28,7 +28,7 @@ public class WelcomePane extends JPanel {
                 if (result == 0) {
                     System.out.println("Name " + userName.getText());
                     DrawandGuess.self.name = name;
-                    WhiteBoardGUI.redirectTo(this, new LobbyPane());
+                    WhiteBoardGUI.redirectTo(this, WhiteBoardGUI.lobby);
                 } else {
                     System.out.println("Not submit");
                 }
