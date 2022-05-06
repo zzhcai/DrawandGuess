@@ -36,8 +36,8 @@ public class ReliableMulticastSocket extends MulticastSocket
 	/** The dynamic rate of sending SESSION messages, in seconds, that
 	 *  the bandwidth consumed is adaptive to 5% of the aggregate bandwidth. */
 	private long sessionRate;
-	protected static final long SESSION_RATE_MAX = 30;
-	protected static final long SESSION_RATE_MIN = 10;
+	protected static final long SESSION_RATE_MAX = 5;
+	protected static final long SESSION_RATE_MIN = 1;
 	private Timer sessionSender;
 
 	/** The aggregate bandwidth in bytes (regardless of headers' overhead),
