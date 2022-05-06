@@ -36,7 +36,6 @@ public class InRoomReceiveThread extends Thread {
                     DrawandGuess.currentRoom.numRounds = room.numRounds;
                     DrawandGuess.currentRoom.timeLimit = room.timeLimit;
                     DrawandGuess.currentRoom.inGame = room.inGame;
-                    DrawandGuess.currentRoom.lastRound = room.lastRound;
                     DrawandGuess.currentRoom.initWords = room.initWords;
                     DrawandGuess.currentRoom.numPlayers = room.numPlayers;
                     DrawandGuess.currentRoom.notifyAll();
@@ -116,7 +115,6 @@ public class InRoomReceiveThread extends Thread {
                                 WhiteBoardGUI.setPrevWord("Starting word: " + initWord);
                             }
                         }
-
                     } else {
                         // even turn guess
                         if (DrawandGuess.turn % 2 == 0) {

@@ -167,7 +167,7 @@ public class WaitingRoomPane extends JPanel {
                     }
                     long now = Instant.now().toEpochMilli();
                     for (Player player: DrawandGuess.currentRoom.playerList) {
-                        if (now - player.lastActive > DrawandGuess.PLAYER_TIMEOUT && !player.inGame) DrawandGuess.currentRoom.playerList.remove(player);
+                        if (now - player.lastActive > DrawandGuess.PLAYER_TIMEOUT) DrawandGuess.currentRoom.playerList.remove(player);
                         if (!player.ready) canStart = false;
                     }
                     playerList.setListData(DrawandGuess.currentRoom.playerList.toArray(new Player[0]));

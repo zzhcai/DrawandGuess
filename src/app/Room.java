@@ -26,7 +26,6 @@ public class Room {
     public int numTurn = 4;
     public ArrayList<ArrayList<String>> initWords = new ArrayList<>();
     public boolean inGame = false;
-    public boolean lastRound = false;
     public int numPlayers = 1;
 
     public Room() {
