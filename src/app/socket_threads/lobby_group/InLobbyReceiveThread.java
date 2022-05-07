@@ -26,18 +26,15 @@ public class InLobbyReceiveThread extends Thread {
     }
 
     public void run() {
-        System.out.println("Lobby receive thread started at: " + socket);
         while (!interrupted) {
             DatagramPacket p = new DatagramPacket(new byte[65507], 65507);
             socket.receive(p);
-            System.out.println("received at lobby: " + new String(p.getData()));
             Room room = DrawandGuess.gson.fromJson(new String(p.getData(), 0, p.getLength()), Room.class);
             synchronized (roomsLastUpdated) {
                 roomsLastUpdated.remove(room);
                 roomsLastUpdated.put(room, Instant.now());
             }
         }
-        System.out.println("Lobby receive thread closed");
         try {
             socket.leaveGroup(DrawandGuess.LOBBY_SOCKET_ADDRESS, null);
         } catch (IOException e) {

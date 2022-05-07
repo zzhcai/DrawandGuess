@@ -28,7 +28,6 @@ public class WelcomePane extends JPanel {
                 String name = userName.getText() + "#" + new Random().nextInt(1000, 10000);
                 int result = JOptionPane.showConfirmDialog(null, "Your name: " + name, "Title", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
                 if (result == 0) {
-                    System.out.println("Name " + userName.getText());
                     DrawandGuess.self.name = name;
                     WhiteBoardGUI.redirectTo(this, WhiteBoardGUI.lobby);
                     WhiteBoardGUI.frame.setTitle("Lobby");
@@ -38,8 +37,6 @@ public class WelcomePane extends JPanel {
                             WhiteBoardGUI.lobby.refresh();
                         }
                     }, DrawandGuess.ROOM_TIMEOUT);
-                } else {
-                    System.out.println("Not submit");
                 }
             }
         });

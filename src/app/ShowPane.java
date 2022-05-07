@@ -14,11 +14,11 @@ public class ShowPane extends JPanel {
     public ShowPane() {
         super();
         this.setLayout(null);
-        wordLabel = new JLabel("a#4399 guessed: Apple", SwingConstants.CENTER);
+        wordLabel = new JLabel("", SwingConstants.CENTER);
         wordLabel.setFont(new Font(wordLabel.getFont().getName(), Font.PLAIN, 16));
         wordLabel.setBounds(0, 20, 750, 50);
 
-        guessLabel = new JLabel("b#7k7k guessed: Apple", SwingConstants.CENTER);
+        guessLabel = new JLabel("", SwingConstants.CENTER);
         guessLabel.setFont(new Font(guessLabel.getFont().getName(), Font.PLAIN, 16));
         guessLabel.setBounds(0, 400, 750, 50);
 

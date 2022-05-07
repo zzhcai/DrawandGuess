@@ -41,12 +41,9 @@ public class GuessPane extends JPanel {
         submitButton.addActionListener(e -> {
             int result = JOptionPane.showConfirmDialog(null, "You guessed: " + guessWord.getText(), "Title", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
             if (result == 0) {
-                System.out.println("Guessed " + guessWord.getText());
                 DrawandGuess.self.guessedList.add(guessWord.getText());
                 WhiteBoardGUI.moveToWait(this);
                 WhiteBoardGUI.frame.setTitle("Waiting For Others to Finish");
-            } else {
-                System.out.println("Not submit");
             }
         });
 

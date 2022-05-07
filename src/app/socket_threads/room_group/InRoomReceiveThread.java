@@ -19,11 +19,9 @@ public class InRoomReceiveThread extends Thread {
     @Override
     public void run() {
         ReliableMulticastSocket socket = MySocketFactory.newInstance(DrawandGuess.currentRoom.IP, DrawandGuess.currentRoom.port);
-        System.out.println("Room receive thread started");
         while (!interrupted) {
             DatagramPacket p = new DatagramPacket(new byte[65507], 65507);
             socket.receive(p);
-            System.out.println("received at room: " + new String(p.getData()));
 
             // We determine the type by parsing into one type and checking if a must-have field is null.
             Player player = DrawandGuess.gson.fromJson(new String(p.getData(), 0, p.getLength()), Player.class);
@@ -132,7 +130,6 @@ public class InRoomReceiveThread extends Thread {
                 }
             }
         }
-        System.out.println("Room receive thread closed");
         try {
             socket.leaveGroup(DrawandGuess.LOBBY_SOCKET_ADDRESS, null);
         } catch (IOException e) {

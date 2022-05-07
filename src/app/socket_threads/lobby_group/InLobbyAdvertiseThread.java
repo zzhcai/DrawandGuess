@@ -31,7 +31,6 @@ public class InLobbyAdvertiseThread extends Thread {
             }
         }
 
-        System.out.println("Room advertise thread started at " + DrawandGuess.currentRoom);
         ReliableMulticastSocket socket = MySocketFactory.newInstance(null, DrawandGuess.LOBBY_PORT);
         // Multicast this room to the lobby every second
         while (!isInterrupted) {
@@ -49,7 +48,6 @@ public class InLobbyAdvertiseThread extends Thread {
                 e.printStackTrace();
             }
         }
-        System.out.println("Room advertise thread closed");
         socket.close();
     }
 }

@@ -23,7 +23,6 @@ public class WhiteBoardGUI {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(new WelcomePane());
         WhiteBoardGUI.frame.setTitle("Welcome");
-//        frame.add(new WaitingRoomPane());
         frame.setVisible(true);
     }
 

@@ -26,7 +26,6 @@ public class InRoomAdvertiseThread extends Thread {
 
     @Override
     public void run() {
-        System.out.println("Player advertise thread started at " + DrawandGuess.currentRoom.getAddress());
         ReliableMulticastSocket socket = MySocketFactory.newInstance(null, DrawandGuess.currentRoom.port);
         while (!isInterrupted) {
             synchronized (DrawandGuess.currentRoom) {
@@ -51,12 +50,10 @@ public class InRoomAdvertiseThread extends Thread {
             byte[] playerOut = DrawandGuess.gson.toJson(DrawandGuess.self, Player.class).getBytes();
             try {
                 socket.send(new DatagramPacket(playerOut, playerOut.length, DrawandGuess.currentRoom.getAddress()));
-                System.out.println("sent at room: " + DrawandGuess.self);
                 if (DrawandGuess.self.isHost) {
                     synchronized (DrawandGuess.currentRoom) {
                         byte[] roomOut = DrawandGuess.gson.toJson(DrawandGuess.currentRoom, Room.class).getBytes();
                         socket.send(new DatagramPacket(roomOut, roomOut.length, DrawandGuess.currentRoom.getAddress()));
-                        System.out.println("sent at room: " + DrawandGuess.currentRoom);
                     }
                 }
             } catch (IOException e) {
@@ -68,7 +65,6 @@ public class InRoomAdvertiseThread extends Thread {
                 e.printStackTrace();
             }
         }
-        System.out.println("Player advertise thread closed");
         socket.close();
     }
 }

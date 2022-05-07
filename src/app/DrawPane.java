@@ -36,7 +36,6 @@ public class DrawPane extends JPanel {
 
         wordLabel = new JLabel();
         wordLabel.setBounds(275, 20, 300, 50);
-        wordLabel.setText("Prev player guessed Apple");
         wordLabel.setFont(new Font(wordLabel.getFont().getName(), Font.PLAIN, 16));
         if (DrawandGuess.turn > 1) {
             synchronized (DrawandGuess.currentRoom) {
@@ -45,8 +44,7 @@ public class DrawPane extends JPanel {
                 if (index != 0) {
                     prevPlayer = index - 1;
                 }
-//                JOptionPane.showConfirmDialog(null, DrawandGuess.currentRoom.playerList.get(prevPlayer)
-//                    .guessedList.get((DrawandGuess.turn)/2));
+
                 wordLabel.setText("Prev player guessed: " + DrawandGuess.currentRoom.playerList.get(prevPlayer)
                         .guessedList.get((DrawandGuess.turn)/2));
             }
@@ -254,7 +252,10 @@ public class DrawPane extends JPanel {
         JButton colorButton = new JButton("color");
         colorButton.setBounds(600, 30, 100, 30);
         colorButton.addActionListener(e -> {
-            color = JColorChooser.showDialog(null, "Choose pen color", color);
+            Color newColor = JColorChooser.showDialog(null, "Choose pen color", color);
+            if (newColor != null) {
+                color = newColor;
+            }
         });
         colorButton.addMouseListener(new MouseAdapter() {
             @Override
