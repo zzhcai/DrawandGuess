@@ -60,14 +60,15 @@ public class ShowPane extends JPanel {
                         Thread.sleep(sleepTime);
                         repaint();
                     }
-                    Thread.sleep(20);
+                    Thread.sleep(200);
                 }
 
+                Thread.sleep(500);
                 guessLabel.setText(DrawandGuess.currentRoom.playerList
                         .get((index+1)%DrawandGuess.currentRoom.numPlayers).name +
                         " guessed: " + DrawandGuess.currentRoom.playerList
                         .get((index+1)%DrawandGuess.currentRoom.numPlayers).guessedList.get(turn + 1));
-                Thread.sleep(2500);
+                Thread.sleep(2000);
             }
         }
     }
