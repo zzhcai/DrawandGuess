@@ -14,25 +14,26 @@ public class ShowPane extends JPanel {
     public ShowPane() {
         super();
         this.setLayout(null);
-        wordLabel = new JLabel();
-        wordLabel.setBounds(500, 20, 300, 50);
+        wordLabel = new JLabel("a#4399 guessed: Apple", SwingConstants.CENTER);
+        wordLabel.setFont(new Font(wordLabel.getFont().getName(), Font.PLAIN, 16));
+        wordLabel.setBounds(0, 20, 750, 50);
 
-        guessLabel = new JLabel();
-        guessLabel.setBounds(500, 700, 300, 50);
+        guessLabel = new JLabel("b#7k7k guessed: Apple", SwingConstants.CENTER);
+        guessLabel.setFont(new Font(guessLabel.getFont().getName(), Font.PLAIN, 16));
+        guessLabel.setBounds(0, 400, 750, 50);
 
         this.add(wordLabel);
         this.add(guessLabel);
     }
 
     public void showing() throws InterruptedException {
-        Thread.sleep(1000);
         for (int word = 0; word < DrawandGuess.currentRoom.numPlayers; word++) {
             for (int turn = 0; turn < DrawandGuess.currentRoom.numTurn/2; turn++) {
                 drawing.clear();
                 guessLabel.setText("");
                 wordLabel.setText("");
                 repaint();
-                Thread.sleep(500);
+                Thread.sleep(1000);
 
                 guessLabel.setText("");
                 int index;
@@ -41,7 +42,9 @@ public class ShowPane extends JPanel {
                             .get((word+turn)%DrawandGuess.currentRoom.numPlayers).guessedList.get(turn));
                     index = word+turn;
                 } else {
-                    wordLabel.setText("Prev player guessed word: " + DrawandGuess.currentRoom.playerList
+                    wordLabel.setText(DrawandGuess.currentRoom.playerList
+                            .get((word+turn)%DrawandGuess.currentRoom.numPlayers).name +
+                            " guessed: " + DrawandGuess.currentRoom.playerList
                             .get((word+turn)%DrawandGuess.currentRoom.numPlayers).guessedList.get(turn));
                     index = word+turn+1;
                 }
@@ -50,19 +53,21 @@ public class ShowPane extends JPanel {
                 for (ColorLine line: DrawandGuess.currentRoom.playerList
                         .get((index)%DrawandGuess.currentRoom.numPlayers).drawingList.get(turn)) {
                     drawing.add(new ColorLine(line.size, line.rgb));
-                    long sleepTime = 300/line.x.size();
+                    long sleepTime = 400/line.x.size();
                     for (int i = 0; i < line.x.size(); i++) {
                         drawing.get(drawing.size()-1).x.add(line.x.get(i));
                         drawing.get(drawing.size()-1).y.add(line.y.get(i));
                         Thread.sleep(sleepTime);
                         repaint();
                     }
-                    Thread.sleep(100);
+                    Thread.sleep(20);
                 }
 
-                guessLabel.setText("Guessed: " + DrawandGuess.currentRoom.playerList
+                guessLabel.setText(DrawandGuess.currentRoom.playerList
+                        .get((index+1)%DrawandGuess.currentRoom.numPlayers).name +
+                        " guessed: " + DrawandGuess.currentRoom.playerList
                         .get((index+1)%DrawandGuess.currentRoom.numPlayers).guessedList.get(turn + 1));
-                Thread.sleep(2000);
+                Thread.sleep(2500);
             }
         }
     }

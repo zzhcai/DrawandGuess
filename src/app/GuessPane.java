@@ -7,19 +7,17 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 
 public class GuessPane extends JPanel {
     private JTextField guessWord;
     private JButton submitButton;
-    private ArrayList<ColorLine> prevDrawing = new ArrayList<>();
 
     public GuessPane() {
         super();
         this.setLayout(null);
 
         guessWord = new JTextField();
-        guessWord.setBounds(400, 600, 300, 50);
+        guessWord.setBounds(200, 380, 250, 50);
         guessWord.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -38,7 +36,7 @@ public class GuessPane extends JPanel {
 
 
         submitButton = new JButton("Submit");
-        submitButton.setBounds(720, 600, 60, 50);
+        submitButton.setBounds(470, 380, 80, 50);
         submitButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
         submitButton.addActionListener(e -> {
             int result = JOptionPane.showConfirmDialog(null, "You guessed: " + guessWord.getText(), "Title", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
@@ -46,6 +44,7 @@ public class GuessPane extends JPanel {
                 System.out.println("Guessed " + guessWord.getText());
                 DrawandGuess.self.guessedList.add(guessWord.getText());
                 WhiteBoardGUI.moveToWait(this);
+                WhiteBoardGUI.frame.setTitle("Waiting For Others to Finish");
             } else {
                 System.out.println("Not submit");
             }
@@ -85,11 +84,7 @@ public class GuessPane extends JPanel {
                 }
             }
         }
-//        super.paint(g);
     }
 
-    public void setPrevDrawing(ArrayList<ColorLine> drawing) {
-        this.prevDrawing = drawing;
-        repaint();
-    }
+
 }

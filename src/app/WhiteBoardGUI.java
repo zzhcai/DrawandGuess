@@ -18,11 +18,12 @@ public class WhiteBoardGUI {
 
     public static void setUp() {
         frame = new JFrame("Draw and Guess");
-        frame.setSize(1200, 800);
+        frame.setSize(750, 500);
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(new WelcomePane());
-//        frame.add(new EndGamePane());
+        WhiteBoardGUI.frame.setTitle("Welcome");
+//        frame.add(new WaitingRoomPane());
         frame.setVisible(true);
     }
 
@@ -43,7 +44,4 @@ public class WhiteBoardGUI {
         drawPane.setWord(word);
     }
 
-    public static void setPrevDraw(ArrayList<ColorLine> drawing) {
-        guessPane.setPrevDrawing(drawing);
-    }
 }

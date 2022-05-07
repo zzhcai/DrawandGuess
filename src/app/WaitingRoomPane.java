@@ -44,28 +44,28 @@ public class WaitingRoomPane extends JPanel {
 
         playerList.setCellRenderer(new PlayerRenderer());
         spPlayers.getVerticalScrollBar().setUnitIncrement(10);
-        spPlayers.setBounds(700, 100, 400, 600);
+        spPlayers.setBounds(400, 60, 300, 380);
 
         this.add(spPlayers);
 
         wordList.setCellRenderer(new VocabRenderer());
         spWords.getVerticalScrollBar().setUnitIncrement(10);
-        spWords.setBounds(100, 300, 400, 400);
+        spWords.setBounds(50, 210, 300, 230);
         this.add(spWords);
 
         JLabel nameLabel = new JLabel("Room name: ");
-        nameLabel.setBounds(100, 50, 150, 30);
+        nameLabel.setBounds(90, 50, 150, 30);
 
         nameField = new JTextField();
         nameField.setText(DrawandGuess.currentRoom.roomName);
-        nameField.setBounds(250, 50, 200, 30);
+        nameField.setBounds(220, 50, 120, 30);
         nameField.setEditable(false);
         nameField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
         nameField.setToolTipText("Press enter to confirm name change");
         nameField.addActionListener(e -> DrawandGuess.currentRoom.roomName = nameField.getText());
 
         JLabel numLabel = new JLabel("Number of rounds: ");
-        numLabel.setBounds(100, 110, 150, 30);
+        numLabel.setBounds(90, 110, 150, 30);
 
         // Format numField so that only 1 to 10 players are allowed.
 //        NumberFormatter formatter = new NumberFormatter(NumberFormat.getInstance());
@@ -76,10 +76,7 @@ public class WaitingRoomPane extends JPanel {
 //        JFormattedTextField numField = new JFormattedTextField(formatter);
         numField = new JTextField(Integer.toString(DrawandGuess.currentRoom.numRounds));
         numField.setEditable(false);
-        numField.setBounds(250, 110, 200, 30);
-        numField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
-
-        numField.setBounds(250, 110, 200, 30);
+        numField.setBounds(220, 110, 120, 30);
         numField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
         this.add(nameLabel);
@@ -88,7 +85,7 @@ public class WaitingRoomPane extends JPanel {
         this.add(numField);
 
         fileButton = new JButton("Choose vocabulary file");
-        fileButton.setBounds(150, 180, 250, 30);
+        fileButton.setBounds(100, 160, 200, 30);
         fileButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
         // Only available for the host
         fileButton.setEnabled(false);
@@ -110,7 +107,7 @@ public class WaitingRoomPane extends JPanel {
         this.add(fileButton);
 
         prepareStartButton = new JButton("Prepare");
-        prepareStartButton.setBounds(700, 50, 100, 30);
+        prepareStartButton.setBounds(600, 25, 100, 30);
         prepareStartButton.setEnabled(false);
         prepareStartButton.setToolTipText("Need at least 4 players and words to start game.");
         prepareStartButton.addActionListener(e -> {

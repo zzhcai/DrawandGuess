@@ -40,12 +40,12 @@ public class LobbyPane extends JPanel {
         //scroll speed
         sp.getVerticalScrollBar().setUnitIncrement(10);
 
-        sp.setBounds(300, 100, 600, 600);
+        sp.setBounds(175, 90, 410, 300);
 
         roomList.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
 
         createRoom = new JButton("Create Room");
-        createRoom.setBounds(350, 720, 150, 30);
+        createRoom.setBounds(200, 420, 150, 30);
         createRoom.addActionListener(e -> createRoom());
 
         createRoom.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
@@ -57,15 +57,15 @@ public class LobbyPane extends JPanel {
             Room room = roomList.getSelectedValue();
             joinRoom(room);
         });
-        joinRoomButton.setBounds(700, 720, 150, 30);
+        joinRoomButton.setBounds(400, 420, 150, 30);
         joinRoomButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
 
         searchBar = new JTextField();
-        searchBar.setBounds(350, 50, 300, 40);
+        searchBar.setBounds(200, 40, 200, 40);
         searchBar.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
         searchButton = new JButton("Search");
-        searchButton.setBounds(655, 55, 100, 30);
+        searchButton.setBounds(400, 45, 80, 30);
         searchButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
         searchButton.addActionListener(e -> {
             searchButton.setEnabled(false);
@@ -84,7 +84,7 @@ public class LobbyPane extends JPanel {
         // Refresh works by sharing a concurrent map with the socket thread,
         // only when the refresh button is pressed, does the UI retrieve contents from the map.
         refreshButton = new JButton("Refresh");
-        refreshButton.setBounds(780, 55, 100, 30);
+        refreshButton.setBounds(480, 45, 80, 30);
         refreshButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
         refreshButton.addActionListener(e -> {
             refreshButton.setEnabled(false);
@@ -135,6 +135,7 @@ public class LobbyPane extends JPanel {
         }
 
         WhiteBoardGUI.redirectTo(this, WhiteBoardGUI.waitingRoom);
+        WhiteBoardGUI.frame.setTitle("Waiting Room");
         WhiteBoardGUI.waitingRoom.startRoom();
     }
 
@@ -154,6 +155,7 @@ public class LobbyPane extends JPanel {
             DrawandGuess.self.isHost = false;
             thread.interrupted = true;
             WhiteBoardGUI.redirectTo(this, WhiteBoardGUI.waitingRoom);
+            WhiteBoardGUI.frame.setTitle("Waiting Room");
             WhiteBoardGUI.waitingRoom.startRoom();
         }
     }

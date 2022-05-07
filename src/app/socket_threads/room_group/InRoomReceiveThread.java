@@ -43,6 +43,7 @@ public class InRoomReceiveThread extends Thread {
                         if (DrawandGuess.currentRoom.inGame && !DrawandGuess.self.inGame) {
                             DrawandGuess.self.inGame = true;
                             WhiteBoardGUI.redirectTo(WhiteBoardGUI.waitingRoom, WhiteBoardGUI.drawPane);
+                            WhiteBoardGUI.frame.setTitle("Drawing Phase");
                             int index = DrawandGuess.currentRoom.playerList.indexOf(DrawandGuess.self);
                             String initWord = (String) JOptionPane.showInputDialog(null,
                                     "Select starting word",
@@ -79,6 +80,7 @@ public class InRoomReceiveThread extends Thread {
                         }
                         WhiteBoardGUI.showPane = new ShowPane();
                         WhiteBoardGUI.redirectTo(WhiteBoardGUI.wait, WhiteBoardGUI.showPane);
+                        WhiteBoardGUI.frame.setTitle("Showing Results");
                         try {
                             WhiteBoardGUI.showPane.showing();
                         } catch (InterruptedException e) {
@@ -88,6 +90,7 @@ public class InRoomReceiveThread extends Thread {
                         synchronized (DrawandGuess.self) {
                             if (DrawandGuess.self.round == DrawandGuess.currentRoom.numRounds) {
                                 WhiteBoardGUI.redirectTo(WhiteBoardGUI.showPane, WhiteBoardGUI.end);
+                                WhiteBoardGUI.frame.setTitle("Thanks For Playing");
                                 DrawandGuess.self.round++;
                             } else {
                                 DrawandGuess.turn = 0;
@@ -97,6 +100,7 @@ public class InRoomReceiveThread extends Thread {
 
                                 WhiteBoardGUI.drawPane = new DrawPane();
                                 WhiteBoardGUI.redirectTo(WhiteBoardGUI.showPane, WhiteBoardGUI.drawPane);
+                                WhiteBoardGUI.frame.setTitle("Drawing Phase");
 
                                 int index = DrawandGuess.currentRoom.playerList.indexOf(DrawandGuess.self);
                                 String initWord = (String) JOptionPane.showInputDialog(null,
@@ -117,9 +121,11 @@ public class InRoomReceiveThread extends Thread {
                         if (DrawandGuess.turn % 2 == 0) {
                             WhiteBoardGUI.drawPane = new DrawPane();
                             WhiteBoardGUI.redirectTo(WhiteBoardGUI.wait, WhiteBoardGUI.drawPane);
+                            WhiteBoardGUI.frame.setTitle("Drawing Phase");
                         } else {
                             WhiteBoardGUI.guessPane = new GuessPane();
                             WhiteBoardGUI.redirectTo(WhiteBoardGUI.wait, WhiteBoardGUI.guessPane);
+                            WhiteBoardGUI.frame.setTitle("Guessing Phase");
                         }
                     }
                     DrawandGuess.turn++;
