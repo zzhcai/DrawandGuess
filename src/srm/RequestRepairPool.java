@@ -75,6 +75,7 @@ public class RequestRepairPool
 						expire = (long) (Math.pow(2, i++) * (C1 + Math.random() * C2) * s.dist());
 					}
 					else expire = 1000;
+					if (expire < 1000) expire = 1000;
 					//noinspection BusyWait
 					Thread.sleep(expire);
 					socket._send(p);
