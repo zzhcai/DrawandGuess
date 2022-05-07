@@ -5,6 +5,8 @@ import app.UI_util.MyMouseAdapter;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class WelcomePane extends JPanel {
     private JTextField userName;
@@ -30,6 +32,12 @@ public class WelcomePane extends JPanel {
                     DrawandGuess.self.name = name;
                     WhiteBoardGUI.redirectTo(this, WhiteBoardGUI.lobby);
                     WhiteBoardGUI.frame.setTitle("Lobby");
+                    new Timer().schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            WhiteBoardGUI.lobby.refresh();
+                        }
+                    }, DrawandGuess.ROOM_TIMEOUT);
                 } else {
                     System.out.println("Not submit");
                 }

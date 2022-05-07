@@ -99,12 +99,7 @@ public class LobbyPane extends JPanel {
         this.add(searchButton);
         this.add(refreshButton);
 
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                refresh();
-            }
-        }, DrawandGuess.ROOM_TIMEOUT);
+
     }
 
     /**
@@ -163,7 +158,7 @@ public class LobbyPane extends JPanel {
     /**
      * Refresh the current room list to eliminate any inactive rooms
      */
-    private void refresh() {
+    public void refresh() {
         Instant now = Instant.now();
         dlm.removeAllElements();
         Set<Map.Entry<Room, Instant>> entrySet = roomsLastUpdated.entrySet();
