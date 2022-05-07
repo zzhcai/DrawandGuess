@@ -12,7 +12,6 @@ Furthermore, we develop a distributed game application that runs on top of the f
   <img src="/docs/dag_steam.png" width="600">
 </p>
 
-
 # Repo Structure
 
 ```
@@ -24,6 +23,7 @@ Furthermore, we develop a distributed game application that runs on top of the f
 |   ├──── app/                                 # application
 |   |     ├──── UI_util/
 |   |     |     ├──── ColorLine.java
+|   |     |     ├──── ColorPoint.java
 |   |     |     ├──── MyMouseAdapter.java
 |   |     |     ├──── PlayerRenderer.java
 |   |     |     ├──── RoomRenderer.java
@@ -61,9 +61,9 @@ Furthermore, we develop a distributed game application that runs on top of the f
 ├── .gitignore
 ├── LICENSE
 ├── README
-└── vocab.txt                                  # example vocabulary file
+├── vocab1.txt                                  # example vocabulary file
+└── vocab2.txt
 ```
-
 
 # Library
 
