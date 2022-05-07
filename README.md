@@ -60,7 +60,7 @@ Furthermore, we develop a distributed game application that runs on top of the f
 ├── .gitattributes
 ├── .gitignore
 ├── LICENSE
-├── README
+├── README.md
 ├── vocab1.txt                                  # example vocabulary file
 └── vocab2.txt
 ```
