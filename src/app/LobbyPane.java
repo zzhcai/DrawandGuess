@@ -10,6 +10,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -38,12 +40,12 @@ public class LobbyPane extends JPanel {
         //scroll speed
         sp.getVerticalScrollBar().setUnitIncrement(10);
 
-        sp.setBounds(300, 100, 600, 600);
+        sp.setBounds(175, 90, 410, 300);
 
         roomList.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
 
         createRoom = new JButton("Create Room");
-        createRoom.setBounds(350, 720, 150, 30);
+        createRoom.setBounds(200, 420, 150, 30);
         createRoom.addActionListener(e -> createRoom());
 
         createRoom.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
@@ -55,15 +57,15 @@ public class LobbyPane extends JPanel {
             Room room = roomList.getSelectedValue();
             joinRoom(room);
         });
-        joinRoomButton.setBounds(700, 720, 150, 30);
+        joinRoomButton.setBounds(400, 420, 150, 30);
         joinRoomButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
 
         searchBar = new JTextField();
-        searchBar.setBounds(350, 50, 300, 40);
+        searchBar.setBounds(200, 40, 200, 40);
         searchBar.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
         searchButton = new JButton("Search");
-        searchButton.setBounds(655, 55, 100, 30);
+        searchButton.setBounds(400, 45, 80, 30);
         searchButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
         searchButton.addActionListener(e -> {
             searchButton.setEnabled(false);
@@ -82,7 +84,7 @@ public class LobbyPane extends JPanel {
         // Refresh works by sharing a concurrent map with the socket thread,
         // only when the refresh button is pressed, does the UI retrieve contents from the map.
         refreshButton = new JButton("Refresh");
-        refreshButton.setBounds(780, 55, 100, 30);
+        refreshButton.setBounds(480, 45, 80, 30);
         refreshButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
         refreshButton.addActionListener(e -> {
             refreshButton.setEnabled(false);
@@ -96,6 +98,8 @@ public class LobbyPane extends JPanel {
         this.add(searchBar);
         this.add(searchButton);
         this.add(refreshButton);
+
+
     }
 
     /**
@@ -109,12 +113,12 @@ public class LobbyPane extends JPanel {
                     JOptionPane.QUESTION_MESSAGE);
         if (roomName == null) return;
 
-        Integer maxDrawTime = (Integer) JOptionPane.showInputDialog(this,
-                    "Select max drawing time",
+        Integer numRounds = (Integer) JOptionPane.showInputDialog(this,
+                    "Select number of rounds",
                     "Create room",
                     JOptionPane.QUESTION_MESSAGE, null,
-                    new Object[]{30, 45, 60, 75, 90}, 30);
-        if (maxDrawTime == null) return;
+                    new Object[]{1, 2, 3, 4 ,5}, 1);
+        if (numRounds == null) return;
 
         DrawandGuess.self.isHost = true;
         DrawandGuess.self.ready = true;
@@ -122,10 +126,11 @@ public class LobbyPane extends JPanel {
         synchronized (DrawandGuess.currentRoom) {
             DrawandGuess.currentRoom.host = DrawandGuess.self;
             DrawandGuess.currentRoom.roomName = roomName;
-            DrawandGuess.currentRoom.timeLimit = maxDrawTime;
+            DrawandGuess.currentRoom.numRounds = numRounds;
         }
 
         WhiteBoardGUI.redirectTo(this, WhiteBoardGUI.waitingRoom);
+        WhiteBoardGUI.frame.setTitle("Waiting Room");
         WhiteBoardGUI.waitingRoom.startRoom();
     }
 
@@ -138,7 +143,6 @@ public class LobbyPane extends JPanel {
             synchronized (DrawandGuess.currentRoom) {
                 DrawandGuess.currentRoom.host = room.host;
                 DrawandGuess.currentRoom.roomName = room.roomName;
-                DrawandGuess.currentRoom.timeLimit = room.timeLimit;
                 DrawandGuess.currentRoom.numRounds = room.numRounds;
                 DrawandGuess.currentRoom.IP = room.IP;
                 DrawandGuess.currentRoom.port = room.port;
@@ -146,6 +150,7 @@ public class LobbyPane extends JPanel {
             DrawandGuess.self.isHost = false;
             thread.interrupted = true;
             WhiteBoardGUI.redirectTo(this, WhiteBoardGUI.waitingRoom);
+            WhiteBoardGUI.frame.setTitle("Waiting Room");
             WhiteBoardGUI.waitingRoom.startRoom();
         }
     }
@@ -153,7 +158,7 @@ public class LobbyPane extends JPanel {
     /**
      * Refresh the current room list to eliminate any inactive rooms
      */
-    private void refresh() {
+    public void refresh() {
         Instant now = Instant.now();
         dlm.removeAllElements();
         Set<Map.Entry<Room, Instant>> entrySet = roomsLastUpdated.entrySet();

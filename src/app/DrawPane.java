@@ -1,6 +1,7 @@
 package app;
 
 import app.UI_util.ColorLine;
+import app.UI_util.ColorPoint;
 
 import javax.swing.*;
 import java.awt.*;
@@ -34,7 +35,9 @@ public class DrawPane extends JPanel {
         this.setLayout(null);
 
         wordLabel = new JLabel();
-        wordLabel.setBounds(550, 20, 200, 50);
+        wordLabel.setBounds(275, 20, 300, 50);
+        wordLabel.setText("Prev player guessed Apple");
+        wordLabel.setFont(new Font(wordLabel.getFont().getName(), Font.PLAIN, 16));
         if (DrawandGuess.turn > 1) {
             synchronized (DrawandGuess.currentRoom) {
                 int index = DrawandGuess.currentRoom.playerList.indexOf(DrawandGuess.self);
@@ -51,7 +54,7 @@ public class DrawPane extends JPanel {
         this.add(wordLabel);
 
         submitButton = new JButton("submit");
-        submitButton.setBounds(1030, 50, 150, 50);
+        submitButton.setBounds(300, 400, 150, 50);
         submitButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -74,6 +77,7 @@ public class DrawPane extends JPanel {
         submitButton.addActionListener(e -> {
             DrawandGuess.self.drawingList.add(lines);
             WhiteBoardGUI.moveToWait(this);
+            WhiteBoardGUI.frame.setTitle("Waiting For Others to Finish");
         });
 
         this.add(submitButton);
@@ -83,7 +87,7 @@ public class DrawPane extends JPanel {
             lastLines = new ArrayList<>();
 
             JButton backButton = new JButton("back");
-            backButton.setBounds(1000, 10, 100, 30);
+            backButton.setBounds(30, 30, 100, 30);
             backButton.setEnabled(false);
             backButton.addMouseListener(new MouseAdapter() {
                 @Override
@@ -106,7 +110,7 @@ public class DrawPane extends JPanel {
 
 
             JButton nextButton = new JButton("next");
-            nextButton.setBounds(1100, 10, 100, 30);
+            nextButton.setBounds(130, 30, 100, 30);
             nextButton.setEnabled(false);
             nextButton.addMouseListener(new MouseAdapter() {
                 @Override
@@ -248,7 +252,7 @@ public class DrawPane extends JPanel {
         });
 
         JButton colorButton = new JButton("color");
-        colorButton.setBounds(900, 10, 100, 30);
+        colorButton.setBounds(600, 30, 100, 30);
         colorButton.addActionListener(e -> {
             color = JColorChooser.showDialog(null, "Choose pen color", color);
         });
@@ -275,7 +279,7 @@ public class DrawPane extends JPanel {
         this.add(colorButton);
 
         JLabel sizeLabel = new JLabel(String.valueOf(size));
-        sizeLabel.setBounds(1010, 50, 100, 30);
+        sizeLabel.setBounds(710, 65, 100, 30);
         this.add(sizeLabel);
 
         Scrollbar sizeAdjust = new Scrollbar(Scrollbar.HORIZONTAL, 20, 0, 1, 60);
@@ -283,7 +287,7 @@ public class DrawPane extends JPanel {
             size = e.getValue();
             sizeLabel.setText(String.valueOf(size));
         });
-        sizeAdjust.setBounds(900, 50, 100, 30);
+        sizeAdjust.setBounds(600, 60, 100, 40);
         sizeAdjust.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {

@@ -11,7 +11,7 @@ public class VocabRenderer extends JPanel implements ListCellRenderer<String>{
         this.setLayout(null);
 
         JLabel name = new JLabel(value);
-        name.setBounds(30, 0, 200, 50);
+        name.setBounds(30, 0, 270, 50);
         this.add(name);
 
         Border blackLine = BorderFactory.createLineBorder(Color.black);
@@ -22,6 +22,6 @@ public class VocabRenderer extends JPanel implements ListCellRenderer<String>{
 
     @Override
     public Dimension getPreferredSize() {
-        return new Dimension(396, 50);
+        return new Dimension(296, 50);
     }
 }

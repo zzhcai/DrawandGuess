@@ -19,10 +19,9 @@ public class Room {
     public String IP;
     public int port;
     public String roomName;
-    public int timeLimit;
     public CopyOnWriteArrayList<String> dictionary = new CopyOnWriteArrayList<>();
     public CopyOnWriteArrayList<Player> playerList = new CopyOnWriteArrayList<>();
-    public int numRounds = 2;
+    public int numRounds;
     public int numTurn = 4;
     public ArrayList<ArrayList<String>> initWords = new ArrayList<>();
     public boolean inGame = false;
@@ -48,7 +47,7 @@ public class Room {
         return "{host=" + host.name +
                 ", name=" + roomName +
                 ", numPlayer=" + playerList.size() +
-                ", maxTime=" + timeLimit +
+                ", numRound=" + numRounds +
                 ", address=" + IP + "port=" + port + "}";
     }
 
