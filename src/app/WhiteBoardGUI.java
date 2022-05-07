@@ -1,9 +1,6 @@
 package app;
 
-import app.UI_util.ColorLine;
-
 import javax.swing.*;
-import java.util.ArrayList;
 
 public class WhiteBoardGUI {
 

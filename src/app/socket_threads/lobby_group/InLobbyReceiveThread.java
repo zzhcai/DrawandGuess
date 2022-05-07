@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentMap;
  * This thread should only run when the player is in the lobby panel.
  */
 public class InLobbyReceiveThread extends Thread {
-    private ReliableMulticastSocket socket;
+    private final ReliableMulticastSocket socket;
     private final ConcurrentMap<Room, Instant> roomsLastUpdated;
     public volatile boolean interrupted = false;
 

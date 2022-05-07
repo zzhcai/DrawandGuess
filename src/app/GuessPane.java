@@ -9,8 +9,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class GuessPane extends JPanel {
-    private JTextField guessWord;
-    private JButton submitButton;
+    private final JTextField guessWord;
 
     public GuessPane() {
         super();
@@ -35,7 +34,7 @@ public class GuessPane extends JPanel {
         });
 
 
-        submitButton = new JButton("Submit");
+        JButton submitButton = new JButton("Submit");
         submitButton.setBounds(470, 380, 80, 50);
         submitButton.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
         submitButton.addActionListener(e -> {

@@ -9,8 +9,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class WelcomePane extends JPanel {
-    private JTextField userName;
-    private JButton submitButton;
+    private final JTextField userName;
 
     public WelcomePane() {
         super();
@@ -20,7 +19,7 @@ public class WelcomePane extends JPanel {
         userName.setBounds(200, 380, 250, 50);
         userName.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));
 
-        submitButton = new JButton("Submit");
+        JButton submitButton = new JButton("Submit");
         submitButton.setBounds(470, 380, 100, 50);
         submitButton.addActionListener(e -> {
             if (userName.getText().length() > 0) {

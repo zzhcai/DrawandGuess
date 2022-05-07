@@ -12,21 +12,16 @@ import java.util.ArrayList;
 
 public class DrawPane extends JPanel {
     private ArrayList<ColorPoint> points;
-    private ArrayList<ArrayList<ColorPoint>> pointLines;
-    private ArrayList<ArrayList<ColorPoint>> lastLines;
-    private ArrayList<ColorLine> lines = new ArrayList<>();
-    private ArrayList<ColorLine> removedLines = new ArrayList<>();
+    private final ArrayList<ArrayList<ColorPoint>> pointLines;
+    private final ArrayList<ArrayList<ColorPoint>> lastLines;
+    private final ArrayList<ColorLine> lines = new ArrayList<>();
+    private final ArrayList<ColorLine> removedLines = new ArrayList<>();
     private int size = 20;
     private Color color = Color.blue;
     private boolean rubber = false;
     private final int ver = 3;
-    private Image mouse;
-    private Toolkit tk;
-    private Cursor cu;
     private int x = -1;
     private int y = -1;
-    private int round;
-    private int turn;
     JLabel wordLabel;
     JButton submitButton;
 
@@ -227,17 +222,11 @@ public class DrawPane extends JPanel {
 
             JButton switchButton = new JButton("switch");
             switchButton.setBounds(1000, 10, 100, 30);
-            switchButton.addActionListener(e -> {
-                rubber = !rubber;
-            });
+            switchButton.addActionListener(e -> rubber = !rubber);
 
             this.add(switchButton);
         }
 
-//        tk = Toolkit.getDefaultToolkit();
-//        mouse = new ImageIcon("src/png-clipart-computer-icons-pencil-drawing-pencil-angle-pencil.png").getImage();
-//        cu = tk.createCustomCursor(mouse, new Point(20, 10), "pen");
-//        this.setCursor(cu);
 
         this.addMouseMotionListener(new MouseMotionAdapter() {
             @Override

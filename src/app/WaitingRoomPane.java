@@ -12,18 +12,15 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.*;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
 
 public class WaitingRoomPane extends JPanel {
     private final DefaultListModel<Player> dlmPlayers = new DefaultListModel<>();
     private final JList<Player> playerList = new JList<>(dlmPlayers);
-    private JScrollPane spPlayers = new JScrollPane(playerList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+    private final JScrollPane spPlayers = new JScrollPane(playerList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     private final DefaultListModel<String> dlmWords = new DefaultListModel<>();
     private final JList<String> wordList = new JList<>(dlmWords);
-    private JScrollPane spWords = new JScrollPane(wordList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+    private final JScrollPane spWords = new JScrollPane(wordList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     private JTextField nameField;
-    private JTextField numField;
     private JButton fileButton;
     private JButton prepareStartButton;
 
@@ -67,14 +64,7 @@ public class WaitingRoomPane extends JPanel {
         JLabel numLabel = new JLabel("Number of rounds: ");
         numLabel.setBounds(90, 110, 150, 30);
 
-        // Format numField so that only 1 to 10 players are allowed.
-//        NumberFormatter formatter = new NumberFormatter(NumberFormat.getInstance());
-//        formatter.setValueClass(Integer.class);
-//        formatter.setMinimum(3);
-//        formatter.setMaximum(10);
-//        formatter.setAllowsInvalid(false);
-//        JFormattedTextField numField = new JFormattedTextField(formatter);
-        numField = new JTextField(Integer.toString(DrawandGuess.currentRoom.numRounds));
+        JTextField numField = new JTextField(Integer.toString(DrawandGuess.currentRoom.numRounds));
         numField.setEditable(false);
         numField.setBounds(220, 110, 120, 30);
         numField.addMouseListener(new MyMouseAdapter(Cursor.TEXT_CURSOR));

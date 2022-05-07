@@ -8,8 +8,6 @@ import srm.ReliableMulticastSocket;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.util.ArrayList;
-import java.util.Collections;
 
 /**
  * This thread periodically multicasts the player information to the room, and only the host would
@@ -22,7 +20,6 @@ public class InRoomAdvertiseThread extends Thread {
 
     // Only become the host after MAX_NO_HOST_COUNT times updates without a host.
     private int noHostCount = 0;
-    private final int MAX_NO_HOST_COUNT = 3;
 
     @Override
     public void run() {
@@ -34,6 +31,7 @@ public class InRoomAdvertiseThread extends Thread {
                         && !DrawandGuess.currentRoom.playerList.contains(DrawandGuess.currentRoom.host)
                         && DrawandGuess.currentRoom.playerList.get(0).equals(DrawandGuess.self)) {
                     noHostCount++;
+                    int MAX_NO_HOST_COUNT = 3;
                     if (noHostCount >= MAX_NO_HOST_COUNT) {
                         synchronized (DrawandGuess.self) {
                             DrawandGuess.self.isHost = true;

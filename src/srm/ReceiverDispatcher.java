@@ -44,7 +44,7 @@ public class ReceiverDispatcher extends Thread
 		Message msg;
 		try {
 			socket._receive(p);
-//			if (Math.random() > 0.9) return null;
+			if (Math.random() > 0.9) return null;
 			msg = ReliableMulticastSocket.gson.fromJson(
 					new String(p.getData(), 0, p.getLength()), Message.class);
 			if (msg == null || msg.getFrom() == null || msg.getType() == null

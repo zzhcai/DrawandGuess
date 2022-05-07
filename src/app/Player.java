@@ -43,18 +43,6 @@ public class Player implements Comparable<Player> {
         return this.name.compareTo(o.name);
     }
 
-    public void roundStart() {
-        guessedList.clear();
-        drawingList.clear();
-    }
-
-
-    public boolean allReceived(int turn) {
-        // guess on even turn
-        boolean received = true;
-
-        return received;
-    }
 }
 
 

@@ -10,22 +10,17 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class LobbyPane extends JPanel {
-    private JScrollPane sp;
     private final DefaultListModel<Room> dlm = new DefaultListModel<>();
     private final ConcurrentMap<Room, Instant> roomsLastUpdated = new ConcurrentHashMap<>();
-    private JList<Room> roomList = new JList<>(dlm);
-    private JButton createRoom;
-    private JButton joinRoomButton;
-    private JTextField searchBar;
-    private JButton searchButton;
-    private InLobbyReceiveThread thread;
-    private JButton refreshButton;
+    private final JList<Room> roomList = new JList<>(dlm);
+    private final JTextField searchBar;
+    private final JButton searchButton;
+    private final InLobbyReceiveThread thread;
+    private final JButton refreshButton;
 
     public LobbyPane() {
         super();
@@ -35,7 +30,7 @@ public class LobbyPane extends JPanel {
         thread.start();
         roomList.setCellRenderer(new RoomRenderer());
 
-        sp = new JScrollPane(roomList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        JScrollPane sp = new JScrollPane(roomList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
         //scroll speed
         sp.getVerticalScrollBar().setUnitIncrement(10);
@@ -44,7 +39,7 @@ public class LobbyPane extends JPanel {
 
         roomList.addMouseListener(new MyMouseAdapter(Cursor.HAND_CURSOR));
 
-        createRoom = new JButton("Create Room");
+        JButton createRoom = new JButton("Create Room");
         createRoom.setBounds(200, 420, 150, 30);
         createRoom.addActionListener(e -> createRoom());
 
@@ -52,7 +47,7 @@ public class LobbyPane extends JPanel {
 
         // Joining a selected room. Do not worry if the room has become empty after the last refresh,
         // joining an empty room results in you become the new host automatically, no worries.
-        joinRoomButton = new JButton("Join Room");
+        JButton joinRoomButton = new JButton("Join Room");
         joinRoomButton.addActionListener(e -> {
             Room room = roomList.getSelectedValue();
             joinRoom(room);
