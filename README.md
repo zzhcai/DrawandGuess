@@ -1,3 +1,5 @@
+This is a forked version of https://github.com/Snnorlax/DrawandGuess.
+
 # Summary
 
 Scalable Reliable Multicast (SRM) is a negative acknowledgement (NACK) -oriented reliable multicast framework ([Floyd et al, 1997](https://doi.org/10.1109/90.650139)). Algorithm ensures receiver-based model of reliability for asynchronous systems on the application level. By referring to term “reliable”, we guarantee properties of integrity, validity and agreement, i.e., if one non-faulty process delivers a message `m`, then `m` will be eventually delivered (liveness) to all group members with no duplication, unless all nodes holding `m` have already crashed. However, ordering isn’t fulfilled. We investigate related research on this topic and compare SRM to other approaches. The loss recovery method is adaptive to the length of repair delay and number of duplicates, making SRM efficient across a broad variety of underlying network typologies.
