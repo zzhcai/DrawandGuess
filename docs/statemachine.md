@@ -22,14 +22,12 @@ stateDiagram-v2
 	
 	state Showing {
 		[*] --> Show
-		Show --> Voting
-		Voting --> [*]
+		Show --> [*]
 	}
 	
 	WaitingRoom --> Gaming: start game
 	Gaming --> Gaming: new round
 	Gaming --> Showing
-	Showing --> WaitingRoom: new game
 	Showing --> [*]: quit
 ```
 
@@ -56,8 +54,6 @@ sequenceDiagram
     end
 	end
 	player ->> player: show results
-	player ->> server/host: vote
-	server/host -->> player: voting result
 	
 ```
 
