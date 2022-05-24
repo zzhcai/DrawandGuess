@@ -195,6 +195,7 @@ sequenceDiagram
 
 
 
+@deprecated
 
 ```mermaid
 classDiagram
