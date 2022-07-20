@@ -1,4 +1,4 @@
-This is a forked version of https://github.com/Snnorlax/DrawandGuess.
+This is a forked version of https://github.com/Snnorlax/comp90020.
 
 # Summary
 
@@ -70,3 +70,7 @@ Furthermore, we develop a distributed game application that runs on top of the f
 # Library
 
 https://search.maven.org/artifact/com.google.code.gson/gson/2.9.0/jar
+
+# Marks
+
+- TBA
